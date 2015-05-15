@@ -45,37 +45,39 @@ describe CSVImporter do
     when_invalid :skip # or :abort
   end
 
-  CSV_CONTENT = "email,confirmed,first_name,last_name
+  describe "happy path" do
+    it 'imports' do
+      csv_content = "email,confirmed,first_name,last_name
 bob@example.com,true,bob,,"
 
+      import = ImportUserCSV.new(content: csv_content)
+      expect(import.rows.size).to eq(1)
 
-  it 'imports' do
-    import = ImportUserCSV.new(content: CSV_CONTENT)
-    expect(import.rows.size).to eq(1)
+      row = import.rows.first
 
-    row = import.rows.first
+      expect(row.csv_attributes).to eq(
+        {
+          email: "bob@example.com",
+          first_name: "bob",
+          last_name: nil,
+          confirmed: "true"
+        }
+      )
 
-    expect(row.csv_attributes).to eq(
-      {
+      import.run!
+
+      expect(import.report.valid_rows.size).to eq(1)
+      expect(import.report.created_rows.size).to eq(1)
+
+      model = import.report.valid_rows.first.model
+      expect(model).to be_persisted
+      expect(model).to have_attributes(
         email: "bob@example.com",
-        first_name: "bob",
-        last_name: nil,
-        confirmed: "true"
-      }
-    )
-
-    import.run!
-
-    expect(import.report.valid_rows.size).to eq(1)
-    expect(import.report.created_rows.size).to eq(1)
-
-    model = import.report.valid_rows.first.model
-    expect(model).to be_persisted
-    expect(model).to have_attributes(
-      email: "bob@example.com",
-      f_name: "bob",
-      l_name: nil,
-      confirmed_at: Time.new(2012)
-    )
+        f_name: "bob",
+        l_name: nil,
+        confirmed_at: Time.new(2012)
+      )
+    end
   end
+
 end
