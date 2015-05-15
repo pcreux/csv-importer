@@ -16,6 +16,7 @@ describe CSVImporter do
 
     validates_presence_of :email
     validates_format_of :email, with: /[^@]+@[^@]/ # contains one @ symbol
+    validates_presence_of :f_name
 
     def persisted?
       @persisted ||= false
@@ -91,6 +92,17 @@ bob@example.com,true,bob,,"
       expect(import.report.created_rows.size).to eq(0)
       expect(import.report.invalid_rows.size).to eq(1)
       expect(import.report.failed_to_create_rows.size).to eq(1)
+    end
+
+    it "maps errors back" do
+      csv_content = "email,confirmed,first_name,last_name
+  bob@example.com,true,,last,"
+      import = ImportUserCSV.new(content: csv_content)
+      import.run!
+
+      row = import.report.invalid_rows.first
+      expect(row.errors.size).to eq(1)
+      expect(row.errors).to eq(first_name: "can't be blank")
     end
   end
 

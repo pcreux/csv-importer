@@ -42,6 +42,12 @@ module CSVImporter
     def columns
       row.map(&:to_sym)
     end
+
+    def column_name_for(attribute)
+      if column = columns_config.select { |column| column.attribute == attribute }.first
+        column.name
+      end
+    end
   end
 
   class Row
@@ -73,6 +79,18 @@ module CSVImporter
           model.public_send("#{attribute}=", csv_value)
         end
       end
+    end
+
+    def errors
+      Hash[
+        model.errors.map do |attribute, errors|
+          if column_name = header.column_name_for(attribute)
+            [column_name, errors]
+          else
+            [attribute, errors]
+          end
+        end
+      ]
     end
   end
 
@@ -151,7 +169,9 @@ module CSVImporter
       csv_importer_config.when_invalid = action
     end
   end
+end
 
+module CSVImporter
   def self.included(klass)
     klass.extend(Dsl)
     klass.define_singleton_method(:csv_importer_config) do
