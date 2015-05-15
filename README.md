@@ -6,6 +6,9 @@ real data.
 CSVImporter aims to handle validations, column mapping, actual import
 and reporting.
 
+[![Build
+Status](https://travis-ci.org/BrewhouseTeam/csv-importer.svg)](https://travis-ci.org/BrewhouseTeam/csv-importer)
+
 ## Usage
 
 Define your CSVImporter:
