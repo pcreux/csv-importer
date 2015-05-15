@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'csv/importer/version'
+require 'csv_importer/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "csv-importer"
-  spec.version       = Csv::Importer::VERSION
+  spec.version       = CSVImporter::VERSION
   spec.authors       = ["Philippe Creux"]
   spec.email         = ["pcreux@gmail.com"]
 
