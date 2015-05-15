@@ -6,3 +6,4 @@ gemspec
 gem 'rspec'
 gem 'guard-rspec'
 gem 'activemodel'
+gem "codeclimate-test-reporter", require: nil
