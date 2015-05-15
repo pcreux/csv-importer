@@ -27,6 +27,14 @@ describe CSVImporter do
         @persisted = true
       end
     end
+
+    def self.find_by_email(email)
+      STORE.select { |u| u.email == email }.first
+    end
+
+    STORE = [
+        User.new(email: "mark@example.com", f_name: "mark", l_name: "old last name", confirmed_at: Time.new(2012))
+    ].tap { |u| u.map(&:save) }
   end
 
   class ImportUserCSV
@@ -37,7 +45,9 @@ describe CSVImporter do
     column :email, required: true
     column :first_name, to: :f_name, required: true
     column :last_name,  to: :l_name
-    column :confirmed,  to: ->(confirmed, model) { model.confirmed_at = Time.new(2012) if confirmed == "true" }
+    column :confirmed,  to: ->(confirmed, model) do
+      model.confirmed_at = confirmed == "true" ? Time.new(2012) : nil
+    end
 
     identifier :email # will find_or_update via
 
@@ -145,6 +155,39 @@ bob@example.com,true,,last,"
       import = ImportUserCSV.new(content: csv_content)
 
       expect(import.header.extra_columns).to eq([:age])
+    end
+  end
+
+  describe "find or create" do
+    it "finds or create via identifier" do
+      csv_content = "email,confirmed,first_name,last_name
+bob@example.com,true,bob,,
+mark@example.com,false,mark,new_last_name"
+      import = ImportUserCSV.new(content: csv_content)
+
+      import.run!
+
+      expect(import.report.valid_rows.size).to eq(2)
+      expect(import.report.created_rows.size).to eq(1)
+      expect(import.report.updated_rows.size).to eq(1)
+
+      model = import.report.created_rows.first.model
+      expect(model).to be_persisted
+      expect(model).to have_attributes(
+        email: "bob@example.com",
+        f_name: "bob",
+        l_name: nil,
+        confirmed_at: Time.new(2012)
+      )
+
+      model = import.report.updated_rows.first.model
+      expect(model).to be_persisted
+      expect(model).to have_attributes(
+        email: "mark@example.com",
+        f_name: "mark",
+        l_name: "new_last_name",
+        confirmed_at: nil
+      )
     end
   end
 

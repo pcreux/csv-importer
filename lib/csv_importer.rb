@@ -76,10 +76,16 @@ module CSVImporter
     attribute :header, Header
     attribute :row_array, Array[String]
     attribute :model_klass
+    attribute :identifier
 
     def model
       @model ||= begin
-        model = model_klass.new
+        model = if identifier
+          value = csv_attributes[header.column_name_for(identifier)]
+          model_klass.public_send("find_by_#{identifier}", value)
+        end
+
+        model ||= model_klass.new
         set_attributes(model)
         model
       end
@@ -217,7 +223,8 @@ module CSVImporter
   end
 
   def rows
-    csv.rows.map { |row_array| Row.new(header: header, row_array: row_array, model_klass: config.model) }
+    csv.rows.map { |row_array| Row.new(header: header, row_array: row_array,
+                                       model_klass: config.model, identifier: config.identifier) }
   end
 
   def run!
