@@ -40,13 +40,33 @@ module CSVImporter
     attribute :row, Array[String]
 
     def columns
-      row.map(&:to_sym)
+      row.map { |cell| cell.to_sym if cell }
     end
 
     def column_name_for(attribute)
       if column = columns_config.select { |column| column.attribute == attribute }.first
         column.name
       end
+    end
+
+    def valid?
+      missing_required_columns.empty?
+    end
+
+    def required_columns
+      columns_config.select { |c| c.required? }.map(&:name)
+    end
+
+    def extra_columns
+      columns - columns_config.map(&:name)
+    end
+
+    def missing_required_columns
+      required_columns - columns
+    end
+
+    def missing_columns
+      columns_config.map(&:name) - columns
     end
   end
 
@@ -152,6 +172,9 @@ module CSVImporter
     attribute :when_invalid, Symbol, default: proc { :skip }
   end
 
+  class Error < StandardError
+  end
+
   module Dsl
     def model(model_klass)
       csv_importer_config.model = model_klass
@@ -198,6 +221,11 @@ module CSVImporter
   end
 
   def run!
+    unless header.valid?
+      raise Error,
+        "The following columns are required: #{header.missing_required_columns.join(', ')}"
+    end
+
     @report = Runner.call(rows: rows)
   end
 

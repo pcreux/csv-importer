@@ -34,8 +34,8 @@ describe CSVImporter do
 
     model User
 
-    column :email
-    column :first_name, to: :f_name
+    column :email, required: true
+    column :first_name, to: :f_name, required: true
     column :last_name,  to: :l_name
     column :confirmed,  to: ->(confirmed, model) { model.confirmed_at = Time.new(2012) if confirmed == "true" }
 
@@ -94,7 +94,7 @@ bob@example.com,true,bob,,"
       expect(import.report.failed_to_create_rows.size).to eq(1)
     end
 
-    it "maps errors back" do
+    it "maps errors back to the csv header column name" do
       csv_content = "email,confirmed,first_name,last_name
   bob@example.com,true,,last,"
       import = ImportUserCSV.new(content: csv_content)
@@ -103,6 +103,48 @@ bob@example.com,true,bob,,"
       row = import.report.invalid_rows.first
       expect(row.errors.size).to eq(1)
       expect(row.errors).to eq(first_name: "can't be blank")
+    end
+  end
+
+  describe "missing required columns" do
+    let(:csv_content) do
+"confirmed,first_name,last_name
+bob@example.com,true,,last,"
+    end
+
+    let(:import) { ImportUserCSV.new(content: csv_content) }
+
+    it "lists missing required columns" do
+      expect(import.header.missing_required_columns).to eq([:email])
+    end
+
+    it "is not a valid header" do
+      expect(import.header).to_not be_valid
+    end
+
+    it "raises an error if you attempt to run the import" do
+      expect { import.run! }.to raise_error CSVImporter::Error
+    end
+  end
+
+  describe "missing columns" do
+    it "lists missing columns" do
+      csv_content = "email,first_name,
+  bob@example.com,bob,"
+      import = ImportUserCSV.new(content: csv_content)
+
+      expect(import.header.missing_required_columns).to be_empty
+      expect(import.header.missing_columns).to eq([:last_name, :confirmed])
+    end
+  end
+
+  describe "extra columns" do
+    it "lists extra columns" do
+      csv_content = "email,confirmed,first_name,last_name,age
+  bob@example.com,true,,last,"
+      import = ImportUserCSV.new(content: csv_content)
+
+      expect(import.header.extra_columns).to eq([:age])
     end
   end
 
