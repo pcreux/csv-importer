@@ -189,6 +189,30 @@ mark@example.com,false,mark,new_last_name"
         confirmed_at: nil
       )
     end
+
+    it "handles errors just fine" do
+      csv_content = "email,confirmed,first_name,last_name
+mark@example.com,false,,new_last_name"
+      import = ImportUserCSV.new(content: csv_content)
+
+      import.run!
+
+      expect(import.report.valid_rows.size).to eq(0)
+      expect(import.report.created_rows.size).to eq(0)
+      expect(import.report.updated_rows.size).to eq(0)
+      expect(import.report.failed_to_update_rows.size).to eq(1)
+
+      model = import.report.failed_to_update_rows.first.model
+      expect(model).to be_persisted
+      expect(model).to have_attributes(
+        email: "mark@example.com",
+        f_name: nil,
+        l_name: "new_last_name",
+        confirmed_at: nil
+      )
+
+    end
+
   end
 
 end
