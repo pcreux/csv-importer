@@ -8,6 +8,10 @@ and reporting.
 
 [![Build
 Status](https://travis-ci.org/BrewhouseTeam/csv-importer.svg)](https://travis-ci.org/BrewhouseTeam/csv-importer)
+[![Code
+Climate](https://codeclimate.com/github/BrewhouseTeam/csv-importer/badges/gpa.svg)](https://codeclimate.com/github/BrewhouseTeam/csv-importer)
+[![Test
+Coverage](https://codeclimate.com/github/BrewhouseTeam/csv-importer/badges/coverage.svg)](https://codeclimate.com/github/BrewhouseTeam/csv-importer/coverage)
 
 ## Usage
 
