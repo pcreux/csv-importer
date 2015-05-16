@@ -29,12 +29,22 @@ describe CSVImporter do
     end
 
     def self.find_by_email(email)
-      STORE.select { |u| u.email == email }.first
+      store.select { |u| u.email == email }.first
     end
 
-    STORE = [
+    def self.find_by_f_name(name)
+      store.select { |u| u.f_name == name }.first
+    end
+
+    def self.reset_store!
+      @store = [
         User.new(email: "mark@example.com", f_name: "mark", l_name: "old last name", confirmed_at: Time.new(2012))
     ].tap { |u| u.map(&:save) }
+    end
+
+    def self.store
+      @store ||= reset_store!
+    end
   end
 
   class ImportUserCSV
@@ -52,6 +62,27 @@ describe CSVImporter do
     identifier :email # will find_or_update via
 
     when_invalid :skip # or :abort
+  end
+
+  class ImportUserCSVByFirstName
+    include CSVImporter
+
+    model User
+
+    column :email, required: true
+    column :first_name, to: :f_name, required: true
+    column :last_name,  to: :l_name
+    column :confirmed,  to: ->(confirmed, model) do
+      model.confirmed_at = confirmed == "true" ? Time.new(2012) : nil
+    end
+
+    identifier :f_name
+
+    when_invalid :abort
+  end
+
+  before do
+    User.reset_store!
   end
 
   describe "happy path" do
@@ -190,6 +221,25 @@ mark@example.com,false,mark,new_last_name"
       )
     end
 
+    it "finds or create by identifier when the attributes does not match the column header" do
+      csv_content = "email,confirmed,first_name,last_name
+mark-new@example.com,false,mark,new_last_name"
+      import = ImportUserCSVByFirstName.new(content: csv_content)
+
+      import.run!
+
+      expect(import.report.updated_rows.size).to eq(1)
+
+      model = import.report.updated_rows.first.model
+      expect(model).to be_valid
+      expect(model).to have_attributes(
+        email: "mark-new@example.com",
+        f_name: "mark",
+        l_name: "new_last_name",
+        confirmed_at: nil
+      )
+    end
+
     it "handles errors just fine" do
       csv_content = "email,confirmed,first_name,last_name
 mark@example.com,false,,new_last_name"
@@ -200,6 +250,7 @@ mark@example.com,false,,new_last_name"
       expect(import.report.valid_rows.size).to eq(0)
       expect(import.report.created_rows.size).to eq(0)
       expect(import.report.updated_rows.size).to eq(0)
+      expect(import.report.failed_to_create_rows.size).to eq(0)
       expect(import.report.failed_to_update_rows.size).to eq(1)
 
       model = import.report.failed_to_update_rows.first.model

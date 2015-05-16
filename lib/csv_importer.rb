@@ -135,6 +135,10 @@ module CSVImporter
     def invalid_rows
       failed_to_create_rows + failed_to_update_rows
     end
+
+    def all_rows
+      valid_rows + invalid_rows
+    end
   end
 
   class Runner
