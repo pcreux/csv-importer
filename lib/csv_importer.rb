@@ -21,7 +21,7 @@ module CSVImporter
     end
   end
 
-  class Column
+  class ColumnDefinition
     include Virtus.model
 
     attribute :name, Symbol
@@ -36,7 +36,7 @@ module CSVImporter
   class Header
     include Virtus.model
 
-    attribute :columns_config, Array[Column]
+    attribute :columns_config, Array[ColumnDefinition]
     attribute :row, Array[String]
 
     def columns
@@ -177,7 +177,7 @@ module CSVImporter
     include Virtus.model
 
     attribute :model
-    attribute :columns, Array[Column], default: proc { [] }
+    attribute :columns, Array[ColumnDefinition], default: proc { [] }
     attribute :identifier, Symbol
     attribute :when_invalid, Symbol, default: proc { :skip }
   end
@@ -191,7 +191,7 @@ module CSVImporter
     end
 
     def column(name, options={})
-      csv_importer_config.columns << Column.new(options.merge(name: name))
+      csv_importer_config.columns << options.merge(name: name)
     end
 
     def identifier(identifier)
