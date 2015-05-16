@@ -36,7 +36,7 @@ module CSVImporter
   class Header
     include Virtus.model
 
-    attribute :columns_config, Array[ColumnDefinition]
+    attribute :column_definitions, Array[ColumnDefinition]
     attribute :row, Array[String]
 
     def columns
@@ -44,7 +44,7 @@ module CSVImporter
     end
 
     def column_name_for(attribute)
-      if column = columns_config.select { |column| column.attribute == attribute }.first
+      if column = column_definitions.select { |column| column.attribute == attribute }.first
         column.name
       end
     end
@@ -54,11 +54,11 @@ module CSVImporter
     end
 
     def required_columns
-      columns_config.select { |c| c.required? }.map(&:name)
+      column_definitions.select { |c| c.required? }.map(&:name)
     end
 
     def extra_columns
-      columns - columns_config.map(&:name)
+      columns - column_definitions.map(&:name)
     end
 
     def missing_required_columns
@@ -66,7 +66,7 @@ module CSVImporter
     end
 
     def missing_columns
-      columns_config.map(&:name) - columns
+      column_definitions.map(&:name) - columns
     end
   end
 
@@ -96,7 +96,7 @@ module CSVImporter
     end
 
     def set_attributes(model)
-      header.columns_config.each do |column|
+      header.column_definitions.each do |column|
         csv_value = csv_attributes[column.name]
         attribute = column.attribute
         if attribute.is_a?(Proc)
@@ -219,7 +219,7 @@ module CSVImporter
   attr_reader :csv, :report
 
   def header
-    @header ||= Header.new(columns_config: config.columns, row: csv.header)
+    @header ||= Header.new(column_definitions: config.columns, row: csv.header)
   end
 
   def config
