@@ -33,18 +33,30 @@ module CSVImporter
     end
   end
 
+  class Column
+    include Virtus.model
+
+    attribute :name, Symbol
+    attribute :definition, ColumnDefinition
+  end
+
   class Header
     include Virtus.model
 
     attribute :column_definitions, Array[ColumnDefinition]
-    attribute :row, Array[String]
+    attribute :column_names, Array[Symbol]
 
     def columns
-      row.map { |cell| cell.to_sym if cell }
+      column_names.map do |column_name|
+        Column.new(
+          name: column_name,
+          definition: find_column_definition(column_name)
+        )
+      end
     end
 
-    def column_name_for(attribute)
-      if column = column_definitions.select { |column| column.attribute == attribute }.first
+    def column_name_for_model_attribute(attribute)
+      if column = columns.find { |column| column.definition.attribute == attribute if column.definition }
         column.name
       end
     end
@@ -53,20 +65,36 @@ module CSVImporter
       missing_required_columns.empty?
     end
 
+    # Returns Array[Symbol]
     def required_columns
-      column_definitions.select { |c| c.required? }.map(&:name)
+      column_definitions.select { |definition| definition.required? }.map(&:name)
     end
 
+    # Returns Array[Symbol]
     def extra_columns
-      columns - column_definitions.map(&:name)
+      column_names - column_definition_names
     end
 
+    # Returns Array[Symbol]
     def missing_required_columns
-      required_columns - columns
+      required_columns - column_names
     end
 
+    # Returns Array[Symbol]
     def missing_columns
-      column_definitions.map(&:name) - columns
+      column_definition_names - column_names
+    end
+
+    private
+
+    def find_column_definition(name)
+      column_definitions.find do |column_definition|
+        column_definition.name == name
+      end
+    end
+
+    def column_definition_names
+      column_definitions.map(&:name)
     end
   end
 
@@ -81,7 +109,7 @@ module CSVImporter
     def model
       @model ||= begin
         model = if identifier
-          value = csv_attributes[header.column_name_for(identifier)]
+          value = csv_attributes[header.column_name_for_model_attribute(identifier)]
           model_klass.public_send("find_by_#{identifier}", value)
         end
 
@@ -92,7 +120,7 @@ module CSVImporter
     end
 
     def csv_attributes
-      @csv_attributes ||= Hash[header.columns.zip(row_array)]
+      @csv_attributes ||= Hash[header.column_names.zip(row_array)]
     end
 
     def set_attributes(model)
@@ -110,7 +138,7 @@ module CSVImporter
     def errors
       Hash[
         model.errors.map do |attribute, errors|
-          if column_name = header.column_name_for(attribute)
+          if column_name = header.column_name_for_model_attribute(attribute)
             [column_name, errors]
           else
             [attribute, errors]
@@ -219,7 +247,7 @@ module CSVImporter
   attr_reader :csv, :report
 
   def header
-    @header ||= Header.new(column_definitions: config.column_definitions, row: csv.header)
+    @header ||= Header.new(column_definitions: config.column_definitions, column_names: csv.header)
   end
 
   def config
