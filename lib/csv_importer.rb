@@ -177,7 +177,7 @@ module CSVImporter
     include Virtus.model
 
     attribute :model
-    attribute :columns, Array[ColumnDefinition], default: proc { [] }
+    attribute :column_definitions, Array[ColumnDefinition], default: proc { [] }
     attribute :identifier, Symbol
     attribute :when_invalid, Symbol, default: proc { :skip }
   end
@@ -191,7 +191,7 @@ module CSVImporter
     end
 
     def column(name, options={})
-      csv_importer_config.columns << options.merge(name: name)
+      csv_importer_config.column_definitions << options.merge(name: name)
     end
 
     def identifier(identifier)
@@ -219,7 +219,7 @@ module CSVImporter
   attr_reader :csv, :report
 
   def header
-    @header ||= Header.new(column_definitions: config.columns, row: csv.header)
+    @header ||= Header.new(column_definitions: config.column_definitions, row: csv.header)
   end
 
   def config
