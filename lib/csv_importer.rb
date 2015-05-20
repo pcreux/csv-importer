@@ -9,7 +9,7 @@ module CSVImporter
     attribute :content, String
 
     def csv_rows
-      @csv_rows ||= CSV.parse(content)
+      @csv_rows ||= sanitize(CSV.parse(content))
     end
 
     def header
@@ -18,6 +18,16 @@ module CSVImporter
 
     def rows
       @rows ||= csv_rows[1..-1]
+    end
+
+    private
+
+    def sanitize(rows)
+      rows.map do |cells|
+        cells.map do |cell|
+          cell.strip if cell
+        end
+      end
     end
   end
 

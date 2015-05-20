@@ -266,4 +266,20 @@ mark@example.com,false,,new_last_name"
 
   end
 
+  it "strips cells" do
+      csv_content = "email,confirmed,first_name,last_name
+bob@example.com   ,  true,   bob   ,,"
+    import = ImportUserCSV.new(content: csv_content)
+
+    import.run!
+
+    model = import.report.created_rows.first.model
+    expect(model).to have_attributes(
+      email: "bob@example.com",
+      confirmed_at: Time.new(2012),
+      f_name: "bob",
+      l_name: nil
+    )
+  end
+
 end
