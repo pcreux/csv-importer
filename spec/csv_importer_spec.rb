@@ -299,8 +299,8 @@ bob@example.com   ,  true,   bob   ,,"
     expect { import.run! }.to_not raise_error
   end
 
-  it "imports from a file_path" do
-    import = ImportUserCSV.new(file_path: "spec/fixtures/valid_csv.csv")
+  it "imports from a path" do
+    import = ImportUserCSV.new(path: "spec/fixtures/valid_csv.csv")
 
     expect { import.run! }.to_not raise_error
   end

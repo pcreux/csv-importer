@@ -8,7 +8,7 @@ module CSVImporter
 
     attribute :content, String
     attribute :file # IO
-    attribute :file_path, String
+    attribute :path, String
 
     def csv_rows
       @csv_rows ||= sanitize(CSV.parse(all_content))
@@ -29,10 +29,10 @@ module CSVImporter
         content
       elsif file.present?
         file.read
-      elsif file_path.present?
-        File.open(file_path).read
+      elsif path.present?
+        File.open(path).read
       else
-        raise Error, "Please provide content, file, or file_path"
+        raise Error, "Please provide content, file, or path"
       end
     end
 
