@@ -267,7 +267,7 @@ mark@example.com,false,,new_last_name"
   end
 
   it "strips cells" do
-      csv_content = "email,confirmed,first_name,last_name
+    csv_content = "email,confirmed,first_name,last_name
 bob@example.com   ,  true,   bob   ,,"
     import = ImportUserCSV.new(content: csv_content)
 
@@ -280,6 +280,14 @@ bob@example.com   ,  true,   bob   ,,"
       f_name: "bob",
       l_name: nil
     )
+  end
+
+  it "strips and downcases columns" do
+    csv_content = "Email,Confirmed,First name,last_name
+bob@example.com   ,  true,   bob   ,,"
+    import = ImportUserCSV.new(content: csv_content)
+
+    expect { import.run! }.to_not raise_error
   end
 
 end

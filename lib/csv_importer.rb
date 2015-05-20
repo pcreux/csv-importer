@@ -13,7 +13,7 @@ module CSVImporter
     end
 
     def header
-      @header ||= csv_rows.first
+      @header ||= underscore(csv_rows.first)
     end
 
     def rows
@@ -27,6 +27,12 @@ module CSVImporter
         cells.map do |cell|
           cell.strip if cell
         end
+      end
+    end
+
+    def underscore(header)
+      header.map do |cell|
+        cell.gsub(/\s+/, '_').downcase if cell
       end
     end
   end
