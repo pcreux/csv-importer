@@ -29,11 +29,11 @@ describe CSVImporter do
     end
 
     def self.find_by_email(email)
-      store.select { |u| u.email == email }.first
+      store.find { |u| u.email == email }
     end
 
     def self.find_by_f_name(name)
-      store.select { |u| u.f_name == name }.first
+      store.find { |u| u.f_name == name }
     end
 
     def self.reset_store!
