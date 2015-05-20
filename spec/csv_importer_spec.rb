@@ -290,4 +290,12 @@ bob@example.com   ,  true,   bob   ,,"
     expect { import.run! }.to_not raise_error
   end
 
+  it "imports from a file (IOStream)" do
+    csv_content = "Email,Confirmed,First name,last_name
+bob@example.com   ,  true,   bob   ,,"
+    csv_io = StringIO.new(csv_content)
+    import = ImportUserCSV.new(file: csv_io)
+
+    expect { import.run! }.to_not raise_error
+  end
 end

@@ -7,9 +7,10 @@ module CSVImporter
     include Virtus.model
 
     attribute :content, String
+    attribute :file # IO
 
     def csv_rows
-      @csv_rows ||= sanitize(CSV.parse(content))
+      @csv_rows ||= sanitize(CSV.parse(all_content))
     end
 
     def header
@@ -21,6 +22,16 @@ module CSVImporter
     end
 
     private
+
+    def all_content
+      if content.present?
+        content
+      elsif file.present?
+        file.read
+      else
+        raise Error, "Please provide content, file, or file_name"
+      end
+    end
 
     def sanitize(rows)
       rows.map do |cells|
