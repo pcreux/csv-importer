@@ -18,6 +18,10 @@ describe CSVImporter do
     validates_format_of :email, with: /[^@]+@[^@]/ # contains one @ symbol
     validates_presence_of :f_name
 
+    def self.transaction
+      yield
+    end
+
     def persisted?
       @persisted ||= false
     end

@@ -211,18 +211,24 @@ module CSVImporter
     def call
       report = Report.new
 
-      rows.each do |row|
-        if row.model.persisted?
-          if row.model.save
-            report.updated_rows << row
+      if rows.empty?
+        return report
+      end
+
+      rows.first.model.class.transaction do
+        rows.each do |row|
+          if row.model.persisted?
+            if row.model.save
+              report.updated_rows << row
+            else
+              report.failed_to_update_rows << row
+            end
           else
-            report.failed_to_update_rows << row
-          end
-        else
-          if row.model.save
-            report.created_rows << row
-          else
-            report.failed_to_create_rows << row
+            if row.model.save
+              report.created_rows << row
+            else
+              report.failed_to_create_rows << row
+            end
           end
         end
       end
