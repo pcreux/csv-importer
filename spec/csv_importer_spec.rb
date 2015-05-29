@@ -308,4 +308,23 @@ bob@example.com   ,  true,   bob   ,,"
 
     expect { import.run! }.to_not raise_error
   end
+
+  describe "#when_invalid" do
+    it "could abort" do
+      csv_content = "email,confirmed,first_name,last_name
+bob@example.com,true,,
+mark@example.com,false,mark," # missing first names
+
+      import = ImportUserCSVByFirstName.new(content: csv_content)
+
+      expect { import.run! }.to_not raise_error
+
+      expect(import.report.valid_rows.size).to eq(0)
+      expect(import.report.created_rows.size).to eq(0)
+      expect(import.report.updated_rows.size).to eq(0)
+      expect(import.report.failed_to_create_rows.size).to eq(1)
+      expect(import.report.failed_to_update_rows.size).to eq(0)
+    end
+
+  end
 end

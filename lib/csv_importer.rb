@@ -207,6 +207,9 @@ module CSVImporter
     include Virtus.model
 
     attribute :rows, Array[Row]
+    attribute :when_invalid, Symbol
+
+    ImportAborted = Class.new(StandardError)
 
     def call
       report = Report.new
@@ -222,18 +225,28 @@ module CSVImporter
               report.updated_rows << row
             else
               report.failed_to_update_rows << row
+              raise ImportAborted if abort_when_invalid?
             end
           else
             if row.model.save
               report.created_rows << row
             else
               report.failed_to_create_rows << row
+              raise ImportAborted if abort_when_invalid?
             end
           end
         end
       end
 
       report
+    rescue ImportAborted
+      report
+    end
+
+    private
+
+    def abort_when_invalid?
+      when_invalid == :abort
     end
   end
 
@@ -301,7 +314,7 @@ module CSVImporter
         "The following columns are required: #{header.missing_required_columns.join(', ')}"
     end
 
-    @report = Runner.call(rows: rows)
+    @report = Runner.call(rows: rows, when_invalid: config.when_invalid)
   end
 
 end
