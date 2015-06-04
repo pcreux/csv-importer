@@ -56,10 +56,26 @@ module CSVImporter
 
     attribute :name, Symbol
     attribute :to
+    attribute :alias
     attribute :required, Boolean
 
     def attribute
       to || name
+    end
+
+    # column_name is a Symbol...
+    def match?(column_name)
+      column_name_str = column_name.to_s
+      case search_query = (self.alias || name)
+      when Symbol
+        column_name == search_query
+      when String
+        column_name_str == search_query
+      when Regexp
+        column_name_str =~ search_query
+      when Array
+        search_query.include?(column_name_str)
+      end
     end
   end
 
@@ -107,7 +123,7 @@ module CSVImporter
 
     # Returns Array[Symbol]
     def missing_required_columns
-      required_columns - column_names
+      required_columns - column_names.map { |name| find_column_definition(name) }.compact.map(&:name)
     end
 
     # Returns Array[Symbol]
@@ -119,7 +135,7 @@ module CSVImporter
 
     def find_column_definition(name)
       column_definitions.find do |column_definition|
-        column_definition.name == name
+        column_definition.match?(name)
       end
     end
 
@@ -156,10 +172,19 @@ module CSVImporter
     def set_attributes(model)
       header.column_definitions.each do |column|
         csv_value = csv_attributes[column.name]
-        attribute = column.attribute
-        if attribute.is_a?(Proc)
-          attribute.call(csv_value, model)
+        if column.to && column.to.is_a?(Proc)
+          to_proc = column.to
+
+          case to_proc.arity
+          when 1
+            model.public_send("#{column.name}=", to_proc.call(csv_value))
+          when 2
+            to_proc.call(csv_value, model)
+          else
+            raise "test me error!"
+          end
         else
+          attribute = column.attribute
           model.public_send("#{attribute}=", csv_value)
         end
       end
@@ -181,10 +206,16 @@ module CSVImporter
   class Report
     include Virtus.model
 
-    attribute :created_rows, Array[Row]
-    attribute :updated_rows, Array[Row]
-    attribute :failed_to_create_rows, Array[Row]
-    attribute :failed_to_update_rows, Array[Row]
+    attribute :status, Symbol, default: proc { :pending }
+
+    attribute :missing_columns, Array[Symbol], default: proc { [] }
+
+    attribute :parser_error, String
+
+    attribute :created_rows, Array[Row], default: proc { [] }
+    attribute :updated_rows, Array[Row], default: proc { [] }
+    attribute :failed_to_create_rows, Array[Row], default: proc { [] }
+    attribute :failed_to_update_rows, Array[Row], default: proc { [] }
 
     def valid_rows
       created_rows + updated_rows
@@ -197,6 +228,65 @@ module CSVImporter
     def all_rows
       valid_rows + invalid_rows
     end
+
+    def success?
+      done? && invalid_rows.empty?
+    end
+
+    def pending?;     status == :pending;         end
+    def in_progress?; status == :in_progress;     end
+    def done?;        status == :done;            end
+    def aborted?;     status == :aborted;         end
+    def invalid_header?; status == :invalid_header; end
+    def invalid_csv_file?; status == :invalid_csv_file; end
+
+    def pending!;     self.status = :pending;     self; end
+    def in_progress!; self.status = :in_progress; self; end
+    def done!;        self.status = :done;        self; end
+    def aborted!;     self.status = :aborted;     self; end
+    def invalid_header!; self.status = :invalid_header; self; end
+    def invalid_csv_file!; self.status = :invalid_csv_file; self; end
+
+    def message
+      ReportMessage.new(report: self).to_s
+    end
+  end
+
+  class ReportMessage
+    include Virtus.model
+
+    attribute :report, Report
+
+    def to_s
+      send("report_#{report.status}")
+    end
+
+    def report_invalid_header
+      "The following columns are required: #{report.missing_columns.join(", ")}"
+    end
+
+    def report_pending
+      "Import hasn't started yet"
+    end
+
+    def report_in_progress
+      "Import in progress"
+    end
+
+    def report_done
+      details = report.attributes
+        .select { |name, _| name["_rows"] }
+        .select { |_, instances| instances.size > 0 }
+        .map { |bucket, instances| "#{instances.size} #{bucket.to_s.gsub('_rows', '').gsub('_', ' ')}" }
+        .join(", ")
+
+      "Import completed: " + details
+    end
+
+    def report_invalid_csv_file
+      report.parser_error
+    end
+
   end
 
   class Runner
@@ -215,8 +305,11 @@ module CSVImporter
       report = Report.new
 
       if rows.empty?
+        report.done!
         return report
       end
+
+      report.in_progress!
 
       rows.first.model.class.transaction do
         rows.each do |row|
@@ -238,8 +331,10 @@ module CSVImporter
         end
       end
 
+      report.done!
       report
     rescue ImportAborted
+      report.aborted!
       report
     end
 
@@ -291,16 +386,14 @@ module CSVImporter
 
   def initialize(*args)
     @csv = CSVReader.new(*args)
+    @config = self.class.csv_importer_config.dup
+    @config.attributes = args.last
   end
 
-  attr_reader :csv, :report
+  attr_reader :csv, :report, :config
 
   def header
     @header ||= Header.new(column_definitions: config.column_definitions, column_names: csv.header)
-  end
-
-  def config
-    self.class.csv_importer_config
   end
 
   def rows
@@ -309,12 +402,15 @@ module CSVImporter
   end
 
   def run!
-    unless header.valid?
-      raise Error,
-        "The following columns are required: #{header.missing_required_columns.join(', ')}"
+    if header.valid?
+      @report = Runner.call(rows: rows, when_invalid: config.when_invalid)
+    else
+      @report = Report.new(status: :invalid_header, missing_columns: header.missing_required_columns)
     end
 
-    @report = Runner.call(rows: rows, when_invalid: config.when_invalid)
+  rescue CSV::MalformedCSVError => e
+    @report = Report.new(status: :invalid_csv_file, parser_error: e.message)
   end
 
 end
+

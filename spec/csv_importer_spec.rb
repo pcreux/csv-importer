@@ -40,6 +40,10 @@ describe CSVImporter do
       store.find { |u| u.f_name == name }
     end
 
+    def self.find_by_l_name(name)
+      store.find { |u| u.l_name == name }
+    end
+
     def self.reset_store!
       @store = [
         User.new(email: "mark@example.com", f_name: "mark", l_name: "old last name", confirmed_at: Time.new(2012))
@@ -56,7 +60,7 @@ describe CSVImporter do
 
     model User
 
-    column :email, required: true
+    column :email, required: true, alias: /email/i
     column :first_name, to: :f_name, required: true
     column :last_name,  to: :l_name
     column :confirmed,  to: ->(confirmed, model) do
@@ -167,8 +171,13 @@ bob@example.com,true,,last,"
       expect(import.header).to_not be_valid
     end
 
-    it "raises an error if you attempt to run the import" do
-      expect { import.run! }.to raise_error CSVImporter::Error
+    it "returns a report when you attempt to run the report" do
+      report = import.run!
+
+      expect(report).to_not be_success
+      expect(report.status).to eq(:invalid_header)
+      expect(report.missing_columns).to eq([:email])
+      expect(report.message).to eq("The following columns are required: email")
     end
   end
 
@@ -325,6 +334,49 @@ mark@example.com,false,mark," # missing first names
       expect(import.report.failed_to_create_rows.size).to eq(1)
       expect(import.report.failed_to_update_rows.size).to eq(0)
     end
+  end
 
+  describe "updating config on the fly" do
+    it "works" do
+      csv_content = "email,confirmed,first_name,last_name
+new-mark@example.com,false,new mark,old last name"
+
+      import = ImportUserCSV.new(
+        content: csv_content,
+        identifier: :l_name
+      )
+
+      report = import.run!
+
+      expect(import.report.created_rows.size).to eq(0)
+      expect(import.report.updated_rows.size).to eq(1)
+
+    end
+  end
+
+  it "handles invalid csv files" do
+    csv_content = %|email,confirmed,first_name,last_name,,
+bob@example.com,"false"
+bob@example.com,false,,in,,,"""|
+
+    import = ImportUserCSV.new(
+      content: csv_content,
+      identifier: :l_name
+    ).run!
+
+    expect(import).to_not be_success
+    expect(import.message).to eq "Unclosed quoted field on line 3."
+  end
+
+  it "uses aliases" do
+    csv_content = %|Email Address,confirmed,first_name,last_name,,
+bob@example.com,false,bob,,|
+
+    import = ImportUserCSV.new(
+      content: csv_content,
+      identifier: :l_name
+    ).run!
+
+    expect(import).to be_success
   end
 end
