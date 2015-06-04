@@ -56,7 +56,7 @@ module CSVImporter
 
     attribute :name, Symbol
     attribute :to
-    attribute :alias
+    attribute :as
     attribute :required, Boolean
 
     def attribute
@@ -64,9 +64,9 @@ module CSVImporter
     end
 
     # column_name is a Symbol...
-    def match?(column_name)
+    def match?(column_name, search_query=(as || name))
       column_name_str = column_name.to_s
-      case search_query = (self.alias || name)
+      case search_query
       when Symbol
         column_name == search_query
       when String
@@ -74,7 +74,9 @@ module CSVImporter
       when Regexp
         column_name_str =~ search_query
       when Array
-        search_query.include?(column_name_str)
+        search_query.any? { |query| match?(column_name, query) }
+      else
+        raise Error, "Invalid `as`. Should be a Symbol, String, Regexp or Array - was #{as.inspect}"
       end
     end
   end
@@ -170,21 +172,25 @@ module CSVImporter
     end
 
     def set_attributes(model)
-      header.column_definitions.each do |column|
+      header.columns.each do |column|
         csv_value = csv_attributes[column.name]
-        if column.to && column.to.is_a?(Proc)
-          to_proc = column.to
+        column_definition = column.definition
+
+        next if column_definition.nil?
+
+        if column_definition.to && column_definition.to.is_a?(Proc)
+          to_proc = column_definition.to
 
           case to_proc.arity
           when 1
-            model.public_send("#{column.name}=", to_proc.call(csv_value))
+            model.public_send("#{column_definition.name}=", to_proc.call(csv_value))
           when 2
             to_proc.call(csv_value, model)
           else
             raise "test me error!"
           end
         else
-          attribute = column.attribute
+          attribute = column_definition.attribute
           model.public_send("#{attribute}=", csv_value)
         end
       end

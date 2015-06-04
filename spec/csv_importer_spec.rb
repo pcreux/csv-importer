@@ -60,7 +60,7 @@ describe CSVImporter do
 
     model User
 
-    column :email, required: true, alias: /email/i
+    column :email, required: true, as: /email/i
     column :first_name, to: :f_name, required: true
     column :last_name,  to: :l_name
     column :confirmed,  to: ->(confirmed, model) do
@@ -368,13 +368,12 @@ bob@example.com,false,,in,,,"""|
     expect(import.message).to eq "Unclosed quoted field on line 3."
   end
 
-  it "uses aliases" do
+  it "column matching via regexp" do
     csv_content = %|Email Address,confirmed,first_name,last_name,,
 bob@example.com,false,bob,,|
 
     import = ImportUserCSV.new(
       content: csv_content,
-      identifier: :l_name
     ).run!
 
     expect(import).to be_success
