@@ -25,7 +25,23 @@ module CSVImporter
 
       report.in_progress!
 
-      rows.first.model.class.transaction do
+      persist_rows!
+
+      report.done!
+      report
+    rescue ImportAborted
+      report.aborted!
+      report
+    end
+
+    private
+
+    def abort_when_invalid?
+      when_invalid == :abort
+    end
+
+    def persist_rows!
+      transaction do
         rows.each do |row|
           if row.model.persisted?
             if row.model.save
@@ -44,18 +60,10 @@ module CSVImporter
           end
         end
       end
-
-      report.done!
-      report
-    rescue ImportAborted
-      report.aborted!
-      report
     end
 
-    private
-
-    def abort_when_invalid?
-      when_invalid == :abort
+    def transaction(&block)
+      rows.first.model.class.transaction(&block)
     end
   end
 end
