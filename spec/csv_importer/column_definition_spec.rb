@@ -45,6 +45,12 @@ module CSVImporter
           it { should match(name) }
         end
       end
+
+      context(name: :email, as: {not: :valid}) do
+        it "should raise an error" do
+          expect { subject.match?("hello") }.to raise_error(Error)
+        end
+      end
     end
   end
 end
