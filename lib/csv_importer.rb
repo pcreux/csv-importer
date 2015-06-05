@@ -11,7 +11,7 @@ module CSVImporter
     attribute :path, String
 
     def csv_rows
-      @csv_rows ||= sanitize(CSV.parse(all_content))
+      @csv_rows ||= sanitize_cells(CSV.parse(sanitize_content(read_content)))
     end
 
     def header
@@ -24,7 +24,7 @@ module CSVImporter
 
     private
 
-    def all_content
+    def read_content
       if content.present?
         content
       elsif file.present?
@@ -36,12 +36,16 @@ module CSVImporter
       end
     end
 
-    def sanitize(rows)
+    def sanitize_cells(rows)
       rows.map do |cells|
         cells.map do |cell|
           cell.strip if cell
         end
       end
+    end
+
+    def sanitize_content(csv_content)
+      csv_content.gsub(/\r\r?\n?/, "\n") # handle windows line separators
     end
 
     def underscore(header)
