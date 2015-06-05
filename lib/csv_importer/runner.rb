@@ -43,23 +43,42 @@ module CSVImporter
     def persist_rows!
       transaction do
         rows.each do |row|
+          tags = []
+
           if row.model.persisted?
-            if row.model.save
-              report.updated_rows << row
-            else
-              report.failed_to_update_rows << row
-              raise ImportAborted if abort_when_invalid?
-            end
+            tags << :update
           else
-            if row.model.save
-              report.created_rows << row
-            else
-              report.failed_to_create_rows << row
-              raise ImportAborted if abort_when_invalid?
-            end
+            tags << :create
           end
+
+          if row.model.save
+            tags << :success
+          else
+            tags << :failure
+          end
+
+          add_to_report(row, tags)
         end
       end
+    end
+
+    def add_to_report(row, tags)
+      bucket = case tags
+      when [ :create, :success ]
+        report.created_rows
+      when [ :create, :failure ]
+        report.failed_to_create_rows
+      when [ :update, :success ]
+        report.updated_rows
+      when [ :update, :failure ]
+        report.failed_to_update_rows
+      else
+        raise "Invalid tags #{tags.inspect}"
+      end
+
+      bucket << row
+
+      raise ImportAborted if abort_when_invalid? && tags[1] == :failure
     end
 
     def transaction(&block)
