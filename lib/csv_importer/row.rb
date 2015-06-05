@@ -15,13 +15,12 @@ module CSVImporter
     def model
       @model ||= begin
         model = if identifier
-          value = csv_attributes[header.column_name_for_model_attribute(identifier)]
-          model_klass.public_send("find_by_#{identifier}", value)
+          find_or_build_model
+        else
+          build_model
         end
 
-        model ||= model_klass.new
         set_attributes(model)
-        model
       end
     end
 
@@ -40,6 +39,8 @@ module CSVImporter
 
         set_attribute(model, column_definition, value)
       end
+
+      model
     end
 
     # Set the attribute using the column_definition and the csv_value
@@ -74,6 +75,17 @@ module CSVImporter
           end
         end
       ]
+    end
+
+    def find_or_build_model
+      model = build_model
+      set_attributes(model)
+      value = model.public_send(identifier)
+      model_klass.public_send("find_by_#{identifier}", value) || build_model
+    end
+
+    def build_model
+      model_klass.new
     end
   end
 end

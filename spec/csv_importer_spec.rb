@@ -62,7 +62,7 @@ describe CSVImporter do
 
     model User
 
-    column :email, required: true, as: /email/i
+    column :email, required: true, as: /email/i, to: ->(email) { email.downcase }
     column :first_name, to: :f_name, required: true
     column :last_name,  to: :l_name
     column :confirmed,  to: ->(confirmed, model) do
@@ -98,7 +98,7 @@ describe CSVImporter do
   describe "happy path" do
     it 'imports' do
       csv_content = "email,confirmed,first_name,last_name
-bob@example.com,true,bob,,"
+BOB@example.com,true,bob,,"
 
       import = ImportUserCSV.new(content: csv_content)
       expect(import.rows.size).to eq(1)
@@ -107,7 +107,7 @@ bob@example.com,true,bob,,"
 
       expect(row.csv_attributes).to eq(
         {
-          "email" => "bob@example.com",
+          "email" => "BOB@example.com",
           "first_name" => "bob",
           "last_name" => nil,
           "confirmed" => "true"
@@ -124,7 +124,7 @@ bob@example.com,true,bob,,"
       model = import.report.valid_rows.first.model
       expect(model).to be_persisted
       expect(model).to have_attributes(
-        "email" => "bob@example.com",
+        "email" => "bob@example.com", # was downcased!
         "f_name" => "bob",
         "l_name" => nil,
         "confirmed_at" => Time.new(2012)
@@ -261,6 +261,27 @@ mark-new@example.com,false,mark,new_last_name"
       )
     end
 
+    it "applies transformation before running the find" do
+      csv_content = "email,confirmed,first_name,last_name
+MARK@EXAMPLE.COM,false,mark,new_last_name"
+
+      import = ImportUserCSV.new(content: csv_content)
+
+      import.run!
+
+      expect(import.report.created_rows.size).to eq(0)
+      expect(import.report.updated_rows.size).to eq(1)
+
+      model = import.report.updated_rows.first.model
+      expect(model).to be_valid
+      expect(model).to have_attributes(
+        email: "mark@example.com",
+        f_name: "mark",
+        l_name: "new_last_name",
+        confirmed_at: nil
+      )
+    end
+
     it "handles errors just fine" do
       csv_content = "email,confirmed,first_name,last_name
 mark@example.com,false,,new_last_name"
@@ -283,8 +304,6 @@ mark@example.com,false,,new_last_name"
         l_name: "new_last_name",
         confirmed_at: nil
       )
-
-
     end
 
   end
