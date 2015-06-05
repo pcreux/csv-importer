@@ -33,17 +33,17 @@ module CSVImporter
 
     # Returns Array[String]
     def extra_columns
-      column_names - column_definition_names
+      columns.reject(&:definition).map(&:name).map(&:to_s)
     end
 
-    # Returns Array[Symbol]
+    # Returns Array[String]
     def missing_required_columns
-      required_columns - column_names.map { |name| find_column_definition(name) }.compact.map(&:name)
+      (column_definitions.select(&:required?) - columns.map(&:definition)).map(&:name).map(&:to_s)
     end
 
-    # Returns Array[Symbol]
+    # Returns Array[String]
     def missing_columns
-      column_definition_names - column_names
+      (column_definitions - columns.map(&:definition)).map(&:name).map(&:to_s)
     end
 
     private

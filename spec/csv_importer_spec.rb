@@ -59,7 +59,7 @@ describe CSVImporter do
     model User
 
     column :email, required: true, as: /email/i, to: ->(email) { email.downcase }
-    column :first_name, to: :f_name, required: true
+    column :f_name, as: :first_name, required: true
     column :last_name,  to: :l_name
     column :confirmed,  to: ->(confirmed, model) do
       model.confirmed_at = confirmed == "true" ? Time.new(2012) : nil
@@ -166,7 +166,7 @@ bob@example.com,true,,last,"
     let(:import) { ImportUserCSV.new(content: csv_content) }
 
     it "lists missing required columns" do
-      expect(import.header.missing_required_columns).to eq([:email])
+      expect(import.header.missing_required_columns).to eq(["email"])
     end
 
     it "is not a valid header" do
