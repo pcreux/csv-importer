@@ -2,10 +2,6 @@ require 'spec_helper'
 
 # High level integration specs
 describe CSVImporter do
-  it 'has a version number' do
-    expect(CSVImporter::VERSION).not_to be nil
-  end
-
   # Mimics an active record model
   class User
     include Virtus.model
