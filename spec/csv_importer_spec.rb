@@ -105,10 +105,10 @@ bob@example.com,true,bob,,"
 
       expect(row.csv_attributes).to eq(
         {
-          email: "bob@example.com",
-          first_name: "bob",
-          last_name: nil,
-          confirmed: "true"
+          "email" => "bob@example.com",
+          "first_name" => "bob",
+          "last_name" => nil,
+          "confirmed" => "true"
         }
       )
 
@@ -120,10 +120,10 @@ bob@example.com,true,bob,,"
       model = import.report.valid_rows.first.model
       expect(model).to be_persisted
       expect(model).to have_attributes(
-        email: "bob@example.com",
-        f_name: "bob",
-        l_name: nil,
-        confirmed_at: Time.new(2012)
+        "email" => "bob@example.com",
+        "f_name" => "bob",
+        "l_name" => nil,
+        "confirmed_at" => Time.new(2012)
       )
     end
   end
@@ -151,7 +151,7 @@ bob@example.com,true,bob,,"
 
       row = import.report.invalid_rows.first
       expect(row.errors.size).to eq(1)
-      expect(row.errors).to eq(first_name: "can't be blank")
+      expect(row.errors).to eq("first_name" => "can't be blank")
     end
   end
 
@@ -188,7 +188,7 @@ bob@example.com,true,,last,"
       import = ImportUserCSV.new(content: csv_content)
 
       expect(import.header.missing_required_columns).to be_empty
-      expect(import.header.missing_columns).to eq([:last_name, :confirmed])
+      expect(import.header.missing_columns).to eq(["last_name", "confirmed"])
     end
   end
 
@@ -198,7 +198,7 @@ bob@example.com,true,,last,"
   bob@example.com,true,,last,"
       import = ImportUserCSV.new(content: csv_content)
 
-      expect(import.header.extra_columns).to eq([:age])
+      expect(import.header.extra_columns).to eq(["age"])
     end
   end
 

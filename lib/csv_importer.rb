@@ -15,7 +15,7 @@ module CSVImporter
     end
 
     def header
-      @header ||= underscore(csv_rows.first)
+      @header ||= csv_rows.first
     end
 
     def rows
@@ -47,12 +47,6 @@ module CSVImporter
     def sanitize_content(csv_content)
       csv_content.gsub(/\r\r?\n?/, "\n") # handle windows line separators
     end
-
-    def underscore(header)
-      header.map do |cell|
-        cell.gsub(/\s+/, '_').downcase if cell
-      end
-    end
   end
 
   class ColumnDefinition
@@ -67,16 +61,19 @@ module CSVImporter
       to || name
     end
 
-    # column_name is a Symbol...
     def match?(column_name, search_query=(as || name))
-      column_name_str = column_name.to_s
+      return false if column_name.nil?
+
+      downcased_column_name = column_name.downcase
+      underscored_column_name = downcased_column_name.gsub(/\s+/, '_')
+
       case search_query
       when Symbol
-        column_name == search_query
+        underscored_column_name == search_query.to_s
       when String
-        column_name_str == search_query
+        downcased_column_name == search_query.downcase
       when Regexp
-        column_name_str =~ search_query
+        column_name =~ search_query
       when Array
         search_query.any? { |query| match?(column_name, query) }
       else
@@ -88,7 +85,7 @@ module CSVImporter
   class Column
     include Virtus.model
 
-    attribute :name, Symbol
+    attribute :name, String
     attribute :definition, ColumnDefinition
   end
 
@@ -96,7 +93,7 @@ module CSVImporter
     include Virtus.model
 
     attribute :column_definitions, Array[ColumnDefinition]
-    attribute :column_names, Array[Symbol]
+    attribute :column_names, Array[String]
 
     def columns
       column_names.map do |column_name|
@@ -117,12 +114,12 @@ module CSVImporter
       missing_required_columns.empty?
     end
 
-    # Returns Array[Symbol]
+    # Returns Array[String]
     def required_columns
       column_definitions.select { |definition| definition.required? }.map(&:name)
     end
 
-    # Returns Array[Symbol]
+    # Returns Array[String]
     def extra_columns
       column_names - column_definition_names
     end
@@ -146,7 +143,7 @@ module CSVImporter
     end
 
     def column_definition_names
-      column_definitions.map(&:name)
+      column_definitions.map(&:name).map(&:to_s)
     end
   end
 
