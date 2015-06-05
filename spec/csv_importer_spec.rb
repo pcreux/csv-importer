@@ -119,6 +119,8 @@ bob@example.com,true,bob,,"
       expect(import.report.valid_rows.size).to eq(1)
       expect(import.report.created_rows.size).to eq(1)
 
+      expect(import.report.message).to eq "Import completed: 1 created"
+
       model = import.report.valid_rows.first.model
       expect(model).to be_persisted
       expect(model).to have_attributes(
@@ -143,6 +145,8 @@ bob@example.com,true,bob,,"
       expect(import.report.created_rows.size).to eq(0)
       expect(import.report.invalid_rows.size).to eq(1)
       expect(import.report.failed_to_create_rows.size).to eq(1)
+
+      expect(import.report.message).to eq "Import completed: 1 failed to create"
     end
 
     it "maps errors back to the csv header column name" do
@@ -234,6 +238,8 @@ mark@example.com,false,mark,new_last_name"
         l_name: "new_last_name",
         confirmed_at: nil
       )
+
+      expect(import.report.message).to eq "Import completed: 1 created, 1 updated"
     end
 
     it "finds or create by identifier when the attributes does not match the column header" do
@@ -267,6 +273,7 @@ mark@example.com,false,,new_last_name"
       expect(import.report.updated_rows.size).to eq(0)
       expect(import.report.failed_to_create_rows.size).to eq(0)
       expect(import.report.failed_to_update_rows.size).to eq(1)
+      expect(import.report.message).to eq "Import completed: 1 failed to update"
 
       model = import.report.failed_to_update_rows.first.model
       expect(model).to be_persisted
@@ -276,6 +283,7 @@ mark@example.com,false,,new_last_name"
         l_name: "new_last_name",
         confirmed_at: nil
       )
+
 
     end
 
@@ -335,6 +343,8 @@ mark@example.com,false,mark," # missing first names
       expect(import.report.updated_rows.size).to eq(0)
       expect(import.report.failed_to_create_rows.size).to eq(1)
       expect(import.report.failed_to_update_rows.size).to eq(0)
+
+      expect(import.report.message).to eq "Import aborted"
     end
   end
 
@@ -379,5 +389,6 @@ bob@example.com,false,bob,,|
     ).run!
 
     expect(import).to be_success
+    expect(import.message).to eq "Import completed: 1 created"
   end
 end
