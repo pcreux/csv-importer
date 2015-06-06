@@ -9,7 +9,12 @@ module CSVImporter
     attribute :path, String
 
     def csv_rows
-      @csv_rows ||= sanitize_cells(CSV.parse(sanitize_content(read_content)))
+      @csv_rows ||= begin
+        sane_content = sanitize_content(read_content)
+        separator = detect_separator(sane_content)
+        cells = CSV.parse(sane_content, col_sep: separator)
+        sanitize_cells(cells)
+      end
     end
 
     # Returns the header as an Array of Strings
@@ -36,6 +41,18 @@ module CSVImporter
       end
     end
 
+    def sanitize_content(csv_content)
+      csv_content
+        .scrub('') # Remove invalid byte sequences
+        .gsub(/\r\r?\n?/, "\n") # Replaces windows line separators with "\n"
+    end
+
+    SEPARATORS = [",", ";", "\t"]
+
+    def detect_separator(csv_content)
+      SEPARATORS.sort_by { |separator| csv_content.count(separator) }.last
+    end
+
     # Strip cells
     def sanitize_cells(rows)
       rows.map do |cells|
@@ -43,12 +60,6 @@ module CSVImporter
           cell.strip if cell
         end
       end
-    end
-
-    def sanitize_content(csv_content)
-      csv_content
-        .scrub('') # Remove invalid byte sequences
-        .gsub(/\r\r?\n?/, "\n") # Replaces windows line separators with "\n"
     end
   end
 end

@@ -12,5 +12,20 @@ module CSVImporter
                              mark@example.com,mark,example")
       expect(reader.header).to eq ["email", "first_name", "last_name"]
     end
+
+    it "supports comma separated csv" do
+      reader = CSVReader.new(content: "email,first_name,last_name")
+      expect(reader.header).to eq ["email", "first_name", "last_name"]
+    end
+
+    it "supports semicolon separated csv" do
+      reader = CSVReader.new(content: "email;first_name;last_name")
+      expect(reader.header).to eq ["email", "first_name", "last_name"]
+    end
+
+    it "supports tab separated csv" do
+      reader = CSVReader.new(content: "email\tfirst_name\tlast_name")
+      expect(reader.header).to eq ["email", "first_name", "last_name"]
+    end
   end
 end
