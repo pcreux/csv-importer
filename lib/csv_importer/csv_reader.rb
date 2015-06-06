@@ -46,9 +46,9 @@ module CSVImporter
     end
 
     def sanitize_content(csv_content)
-      csv_content.
-        scrub(''). # Remove invalid byte sequences
-        gsub(/\r\r?\n?/, "\n") # Replaces windows line separators with "\n"
+      csv_content
+        .scrub('') # Remove invalid byte sequences
+        .gsub(/\r\r?\n?/, "\n") # Replaces windows line separators with "\n"
     end
   end
 end
