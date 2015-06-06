@@ -25,11 +25,11 @@ module CSVImporter
     private
 
     def read_content
-      if content.present?
+      if content
         content
-      elsif file.present?
+      elsif file
         file.read
-      elsif path.present?
+      elsif path
         File.open(path).read
       else
         raise Error, "Please provide content, file, or path"
@@ -45,9 +45,10 @@ module CSVImporter
       end
     end
 
-    # Replaces windows line separators with "\n"
     def sanitize_content(csv_content)
-      csv_content.gsub(/\r\r?\n?/, "\n")
+      csv_content.
+        scrub(''). # Remove invalid byte sequences
+        gsub(/\r\r?\n?/, "\n") # Replaces windows line separators with "\n"
     end
   end
 end
