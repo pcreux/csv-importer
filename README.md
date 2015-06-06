@@ -15,6 +15,8 @@ Coverage](https://codeclimate.com/github/BrewhouseTeam/csv-importer/badges/cover
 
 ## Usage
 
+**This is still a work in progress**
+
 Define your CSVImporter:
 
 ```ruby
@@ -23,12 +25,12 @@ class ImportUserCSV
 
   model User
 
-  column :email
-  column :first_name, to: :f_name, required: false
-  column :last_name,  to: :l_name, required: false
-  column :published,  to: ->(published, model) { model.published_at = Time.now if published }, required: false
+  column :email, to: ->(email) { email.downcase }, required: true
+  column :first_name, as: [ /first.?name/i, /pr(é|e)nom/i ]
+  column :last_name,  to: :l_name
+  column :published,  to: ->(published, model) { model.published_at = published ? Time.now : nil }
 
-  identifier :email # will find_or_update via
+  identifier :email # will find_or_update via :email
 
   when_invalid :skip # or :abort
 end
@@ -51,10 +53,10 @@ import.header.valid?
 import.header
   # => returns an instance of `CSVImporter::Header`
 
-import.header.missing_required_columns # => [:email]
-import.header.missing_columns          # => [:email, :first_name]
-import.header.extra_columns            # => [:zip_code]
-import.header.columns                  # => [:last_name, :zip_code]
+import.header.missing_required_columns # => ["email"]
+import.header.missing_columns          # => ["email", "first_name"]
+import.header.extra_columns            # => ["zip_code"]
+import.header.columns                  # => ["last_name", "zip_code"]
 
 # Manipulate rows
 
@@ -70,22 +72,18 @@ row.valid?           # delegate to model.valid?
 
 # Time to run the import!
 
-import.run!
-  # raise error if InvalidHeader
-  # return report object
-
-# Let's see how things went
-
-import.report
-  # => return an instance of `CSVImporter::ImportReport`
+report = import.run!
 
 # The following methods return arrays of `Row`
-import.report.valid_rows
-import.report.invalid_rows
-import.report.created_rows
-import.report.updated_rows
-import.report.failed_to_create_rows
-import.report.failed_to_update_rows
+report.valid_rows
+report.invalid_rows
+report.created_rows
+report.updated_rows
+report.failed_to_create_rows
+report.failed_to_update_rows
+
+report.success? # => true
+report.message # => "Import completed. 4 created, 2 updated, 1 failed to update"
 ```
 
 ## Installation
