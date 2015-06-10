@@ -3,7 +3,8 @@ require "spec_helper"
 module CSVImporter
   describe CSVReader do
     it "removes invalid byte sequences" do
-      reader = CSVReader.new(content: "email,first_name,last_name\x81")
+      content = "email,first_name,\xFFlast_name\x81".force_encoding('ASCII-8BIT')
+      reader = CSVReader.new(content: content)
       expect(reader.header).to eq ["email", "first_name", "last_name"]
     end
 
@@ -27,5 +28,6 @@ module CSVImporter
       reader = CSVReader.new(content: "email\tfirst_name\tlast_name")
       expect(reader.header).to eq ["email", "first_name", "last_name"]
     end
+
   end
 end
