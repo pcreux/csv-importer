@@ -12,6 +12,8 @@ Status](https://travis-ci.org/BrewhouseTeam/csv-importer.svg)](https://travis-ci
 Climate](https://codeclimate.com/github/BrewhouseTeam/csv-importer/badges/gpa.svg)](https://codeclimate.com/github/BrewhouseTeam/csv-importer)
 [![Test
 Coverage](https://codeclimate.com/github/BrewhouseTeam/csv-importer/badges/coverage.svg)](https://codeclimate.com/github/BrewhouseTeam/csv-importer/coverage)
+[![Gem
+Version](https://badge.fury.io/rb/csv-importer.svg)](http://badge.fury.io/rb/csv-importer)
 
 ## Rationale
 
