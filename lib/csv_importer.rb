@@ -49,6 +49,7 @@ module CSVImporter
     @csv = CSVReader.new(*args)
     @config = self.class.csv_importer_config.dup
     @config.attributes = args.last
+    @report = Report.new
   end
 
   attr_reader :csv, :report, :config
@@ -64,14 +65,23 @@ module CSVImporter
                                        model_klass: config.model, identifier: config.identifier) }
   end
 
-  # Run the import. Return a Report.
-  def run!
-    if header.valid?
-      @report = Runner.call(rows: rows, when_invalid: config.when_invalid)
-    else
-      @report = Report.new(status: :invalid_header, missing_columns: header.missing_required_columns)
+  def valid_header?
+    if @report.pending?
+      if header.valid?
+        @report = Report.new(status: :pending, extra_columns: header.extra_columns)
+      else
+        @report = Report.new(status: :invalid_header, missing_columns: header.missing_required_columns, extra_columns: header.extra_columns)
+      end
     end
 
+    header.valid?
+  end
+
+  # Run the import. Return a Report.
+  def run!
+    if valid_header?
+      @report = Runner.call(rows: rows, when_invalid: config.when_invalid)
+    end
   rescue CSV::MalformedCSVError => e
     @report = Report.new(status: :invalid_csv_file, parser_error: e.message)
   end

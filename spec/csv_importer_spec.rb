@@ -174,7 +174,8 @@ bob@example.com,true,,last,"
     end
 
     it "returns a report when you attempt to run the report" do
-      report = import.run!
+      import.valid_header?
+      report = import.report
 
       expect(report).to_not be_success
       expect(report.status).to eq(:invalid_header)
