@@ -3,7 +3,7 @@
 Importing a CSV file is easy to code until real users attempt to import
 real data.
 
-CSVImporter aims to handle validations, column mapping, actual import
+CSVImporter aims to handle validations, column mapping, import
 and reporting.
 
 [![Build
@@ -13,9 +13,25 @@ Climate](https://codeclimate.com/github/BrewhouseTeam/csv-importer/badges/gpa.sv
 [![Test
 Coverage](https://codeclimate.com/github/BrewhouseTeam/csv-importer/badges/coverage.svg)](https://codeclimate.com/github/BrewhouseTeam/csv-importer/coverage)
 
-## Usage
+## Rationale
 
-**This is still a work in progress**
+Importing CSV files seems easy until you deal with *real* users uploading
+their *real* CSV file. You then have to deal with ASCII-8BIT formats,
+missing columns, empty rows, malformed headers, wild separators, etc.
+Reporting progress and errors to the end-user is also key for a good
+experience.
+
+I went through this many times so I decided to build CSV Importer to
+save us a lot of trouble.
+
+
+CSV Importer provides:
+
+* a DSL to define the mapping between CSV columns and your model
+* good reporting to the end user
+* support for wild encodings and CSV formats.
+
+## Usage
 
 Define your CSVImporter:
 
@@ -27,7 +43,7 @@ class ImportUserCSV
 
   column :email, to: ->(email) { email.downcase }, required: true
   column :first_name, as: [ /first.?name/i, /pr(é|e)nom/i ]
-  column :last_name,  to: :l_name
+  column :last_name,  as: [ /last.?name/i, "nom" ]
   column :published,  to: ->(published, model) { model.published_at = published ? Time.now : nil }
 
   identifier :email # will find_or_update via :email
@@ -47,40 +63,14 @@ import = ImportUserCSV.new(content: String)
 
 # Validate header
 
-import.header.valid?
-  # => true if header is valid
+import.valid_header?
+  # => false
+import.report.message
+  # => "The following columns are required: email"
 
-import.header
-  # => returns an instance of `CSVImporter::Header`
-
-import.header.missing_required_columns # => ["email"]
-import.header.missing_columns          # => ["email", "first_name"]
-import.header.extra_columns            # => ["zip_code"]
-import.header.columns                  # => ["last_name", "zip_code"]
-
-# Manipulate rows
-
-import.rows
-  # => return a (lazy?) Array of Rows
-row = rows.first
-
-row.raw_string       # => "bob@example.com,bob,,extra"
-row.raw_array        # => [ "bob@example.com", "bob", "", "extra" ]
-row.csv_attributes   # => { email: "bob@example.com", first_name: "bob" }
-row.model            # => User<email: "bob@example.com", f_name: "bob", id: nil>
-row.valid?           # delegate to model.valid?
-
-# Time to run the import!
+# Assume the header was valid, let's run the import!
 
 report = import.run!
-
-# The following methods return arrays of `Row`
-report.valid_rows
-report.invalid_rows
-report.created_rows
-report.updated_rows
-report.failed_to_create_rows
-report.failed_to_update_rows
 
 report.success? # => true
 report.message # => "Import completed. 4 created, 2 updated, 1 failed to update"
