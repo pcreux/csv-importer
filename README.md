@@ -33,7 +33,7 @@ CSV Importer provides:
 * good reporting to the end user
 * support for wild encodings and CSV formats.
 
-## Usage
+## Usage tldr;
 
 Define your CSVImporter:
 
@@ -41,12 +41,12 @@ Define your CSVImporter:
 class ImportUserCSV
   include CSVImporter
 
-  model User
+  model User # an active record like model
 
   column :email, to: ->(email) { email.downcase }, required: true
   column :first_name, as: [ /first.?name/i, /pr(é|e)nom/i ]
   column :last_name,  as: [ /last.?name/i, "nom" ]
-  column :published,  to: ->(published, model) { model.published_at = published ? Time.now : nil }
+  column :published,  to: ->(published, user) { user.published_at = published ? Time.now : nil }
 
   identifier :email # will find_or_update via :email
 
@@ -54,28 +54,19 @@ class ImportUserCSV
 end
 ```
 
-Let's run an new import:
+Run the import:
 
 ```ruby
-# Import a file (IOStream or file path) and from CSV content
+import = ImportUserCSV.new(file: my_file)
 
-import = ImportUserCSV.new(file: InputStream)
-import = ImportUserCSV.new(path: String)
-import = ImportUserCSV.new(content: String)
+import.valid_header?  # => false
+import.report.message # => "The following columns are required: email"
 
-# Validate header
+# Assuming the header was valid, let's run the import!
 
-import.valid_header?
-  # => false
-import.report.message
-  # => "The following columns are required: email"
-
-# Assume the header was valid, let's run the import!
-
-report = import.run!
-
-report.success? # => true
-report.message # => "Import completed. 4 created, 2 updated, 1 failed to update"
+import.run!
+import.report.success? # => true
+import.report.message  # => "Import completed. 4 created, 2 updated, 1 failed to update"
 ```
 
 ## Installation
@@ -93,6 +84,243 @@ And then execute:
 Or install it yourself as:
 
     $ gem install csv-importer
+
+## Usage
+
+### Create an Importer
+
+Create a class and include `CSVImporter`.
+
+```ruby
+class ImportUserCSV
+  include CSVImporter
+end
+```
+
+### Associate an active record model
+
+The `model` is likely to be an active record model.
+
+```ruby
+class ImportUserCSV
+  include CSVImporter
+
+  model User
+end
+```
+
+It can also be a relation which is handy to preset attributes:
+
+```ruby
+class User
+  scope :pending, -> { where(status: 'pending') }
+end
+
+class ImportUserCSV
+  include CSVImporter
+
+  model User.pending
+end
+```
+
+You can change the configuration at runtime to import associated records.
+
+```ruby
+class Team
+  has_many :users
+end
+
+team = Team.find(1)
+
+ImportUserCSV.new(path: "tmp/my_file.csv", model: team.users)
+```
+
+### Define columns and their mapping
+
+This is where the fun begins.
+
+```ruby
+class ImportUserCSV
+  include CSVImporter
+
+  model User
+
+  column :email
+end
+```
+
+This will map the column named email to the email attribute. By default,
+we downcase and strip the columns so it will work with a column spelled " EMail ".
+
+Now, email could also be spelled "e-mail", or "mail", or even "courriel"
+(oh, canada). Let's give it a couple of aliases then:
+
+
+```ruby
+class ImportUserCSV
+  include CSVImporter
+
+  model User
+
+  column :email, as: [/e.?mail/i, "courriel"]
+end
+```
+
+Nice, emails should be downcased though, so let's do this.
+
+```ruby
+class ImportUserCSV
+  include CSVImporter
+
+  model User
+
+  column :email, as: [/e.?mail/i, "courriel"], to: ->(email) { email.downcase if email }
+end
+```
+
+If you need to do more advanced stuff, you've got access to the model:
+
+```ruby
+class ImportUserCSV
+  include CSVImporter
+
+  model User
+
+  column :email, as: [/e.?mail/i, "courriel"], to: ->(email, user) { user.email = email.downcase; model.super_user! if email[/@brewhouse.io\z/] }
+end
+```
+
+Now, what if the user does not provide the email column? It's not worth
+running the import, we should just reject the CSV file right away.
+That's easy:
+
+```ruby
+class ImportUserCSV
+  include CSVImporter
+
+  model User
+
+  column :email, required: true
+end
+
+import = ImportUserCSV.new(content: "name\nbob")
+import.valid_header? # => false
+import.report.status # => :invalid_header
+import.report.message # => "The following columns are required: 'email'"
+```
+
+
+### Update or Create
+
+You often want to find-and-update-or-create when importing a CSV file.
+Just provide an identifier, and we'll do the hard work for you.
+
+```ruby
+class ImportUserCSV
+  include CSVImporter
+
+  model User
+
+  column :email, to: ->(email) { email.downcase if email }
+
+  identifier :email
+end
+```
+
+And yes, we'll look for an existing record using the downcased email. :)
+
+### Skip or Abort on error
+
+By default, we skip invalid records and report errors back to the user.
+There are times where you want your import to be an all or nothing. The
+`on_error` option is here for you.
+
+```ruby
+class ImportUserCSV
+  include CSVImporter
+
+  model User
+
+  column :email, to: ->(email) { email.downcase if email }
+
+  on_error :abort
+end
+
+import = ImportUserCSV.new(content: "email\nbob@example.com\nINVALID_EMAIL")
+import.valid_header? # => true
+import.run!
+import.success? # => false
+import.report.status # => :aborted
+import.report.message # => "Import aborted"
+```
+
+You are now done defining your importer, let's run it!
+
+### Import from a file, path or string
+
+You can import from a file, path or just the CSV content. Please note
+that we currently load the entire file in memory. Feel free to
+contribute if you need to support CSV files with millions of lines! :)
+
+```ruby
+import = ImportUserCSV.new(file: my_file)
+import = ImportUserCSV.new(path: "tmp/new_users.csv")
+import = ImportUserCSV.new(content: "email,name\nbob@example.com,bob")
+```
+
+### Overwrite configuration at runtime
+
+It is often needed to change the configuration at runtime, that's quite
+easy:
+
+```ruby
+team = Team.find(1)
+import = ImportUserCSV.new(file: my_file, model: team.users)
+```
+
+### Validate the header
+
+On a web application, as soon as a CSV file is uploaded, you can check
+if it has the required columns. This is handy to fail early an provide
+the user with a meaningful error message right away.
+
+```ruby
+import = ImportUserCSV.new(file: params[:csv_file])
+import.valid_header? # => false
+import.report.message # => "The following columns are required: "email""
+```
+
+### Run the import and provide feedback to the user
+
+```ruby
+import = ImportUserCSV.new(file: params[:csv_file])
+import.run!
+import.report.message  # => "Import completed. 4 created, 2 updated, 1 failed to update"
+```
+
+You can get your hands dirty and fetch the errored rows and the
+associated error message:
+
+```ruby
+import.report.invalid_rows.map { |row| [row.model.email, row.errors] }
+  # => [ [ "INVALID_EMAIL", { "email" => "is invalid" } ] ]
+```
+
+We do our best to map the errors back to the original column name. So
+with the following definition:
+
+```ruby
+  column :email, as: /e.?mail/i
+```
+
+and csv:
+
+```csv
+E-Mail,name
+INVALID_EMAIL,bob
+```
+
+The error returned should be: `{ "E-Mail" => "is invalid" }`
 
 ## Development
 
