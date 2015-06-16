@@ -177,6 +177,8 @@ bob@example.com,true,,last,"
       import.valid_header?
       report = import.report
 
+      expect(import.run!).to eq(report)
+
       expect(report).to_not be_success
       expect(report.status).to eq(:invalid_header)
       expect(report.missing_columns).to eq([:email])

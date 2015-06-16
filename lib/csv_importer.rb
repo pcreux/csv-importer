@@ -81,6 +81,8 @@ module CSVImporter
   def run!
     if valid_header?
       @report = Runner.call(rows: rows, when_invalid: config.when_invalid)
+    else
+      @report
     end
   rescue CSV::MalformedCSVError => e
     @report = Report.new(status: :invalid_csv_file, parser_error: e.message)
