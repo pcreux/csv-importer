@@ -270,6 +270,33 @@ import = ImportUserCSV.new(file: my_file) do
 end
 ```
 
+### Preset attributes
+
+You can preset attributes (or perform any changes to the model) at
+configuration or runtime using `after_build`
+
+```ruby
+
+class ImportUserCSV
+  model User
+
+  column :email
+
+  after_build do |user|
+    user.name = email.split('@').first if email
+  end
+end
+
+# assuming `current_user` is available
+
+import = ImportUserCSV.new(file: my_file) do
+  after_build do |user|
+    user.created_by_user = current_user
+  end
+end
+```
+
+
 ### Validate the header
 
 On a web application, as soon as a CSV file is uploaded, you can check
