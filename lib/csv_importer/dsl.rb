@@ -3,23 +3,23 @@ module CSVImporter
   # It is a thin proxy to the Config object
   module Dsl
     def model(model_klass)
-      csv_importer_config.model = model_klass
+      config.model = model_klass
     end
 
     def column(name, options={})
-      csv_importer_config.column_definitions << options.merge(name: name)
+      config.column_definitions << options.merge(name: name)
     end
 
     def identifier(identifier)
-      csv_importer_config.identifier = identifier
+      config.identifier = identifier
     end
 
     def when_invalid(action)
-      csv_importer_config.when_invalid = action
+      config.when_invalid = action
     end
 
     def after_build(&block)
-      csv_importer_config.after_build = block
+      config.after_build = block
     end
   end
 end

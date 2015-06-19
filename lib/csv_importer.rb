@@ -32,8 +32,8 @@ module CSVImporter
 
   def self.included(klass)
     klass.extend(Dsl)
-    klass.define_singleton_method(:csv_importer_config) do
-      @csv_importer_config ||= Config.new
+    klass.define_singleton_method(:config) do
+      @config ||= Config.new
     end
   end
 
@@ -47,7 +47,7 @@ module CSVImporter
   #
   def initialize(*args)
     @csv = CSVReader.new(*args)
-    @config = self.class.csv_importer_config.dup
+    @config = self.class.config.dup
     @config.attributes = args.last
     @report = Report.new
   end
