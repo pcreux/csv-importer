@@ -133,6 +133,10 @@ end
 team = Team.find(1)
 
 ImportUserCSV.new(path: "tmp/my_file.csv", model: team.users)
+# or
+ImportUserCSV.new(path: "tmp/my_file.csv") do
+  model team.users
+end
 ```
 
 ### Define columns and their mapping
@@ -258,6 +262,12 @@ easy:
 ```ruby
 team = Team.find(1)
 import = ImportUserCSV.new(file: my_file, model: team.users)
+
+# or
+
+import = ImportUserCSV.new(file: my_file) do
+  model: team.users
+end
 ```
 
 ### Validate the header
