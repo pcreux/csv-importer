@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'set'
 
 # High level integration specs
 describe CSVImporter do
@@ -28,6 +29,7 @@ describe CSVImporter do
     def save
       if valid?
         @id = rand(100)
+        self.class.store << self
       end
     end
 
@@ -44,9 +46,13 @@ describe CSVImporter do
     end
 
     def self.reset_store!
-      @store = [
-        User.new(email: "mark@example.com", f_name: "mark", l_name: "old last name", confirmed_at: Time.new(2012))
-    ].tap { |u| u.map(&:save) }
+      @store = Set.new
+
+      User.new(
+        email: "mark@example.com", f_name: "mark", l_name: "old last name", confirmed_at: Time.new(2012)
+      ).save
+
+      @store
     end
 
     def self.store
