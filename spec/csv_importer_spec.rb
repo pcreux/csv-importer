@@ -451,10 +451,13 @@ BOB@example.com,true,bob,,"
   bob@example.com,true,bob,,"
       current_user_id = 3
 
-      import = ImportUserCSV.new(
-        content: csv_content,
-        after_build: -> (model) { model.created_by_user_id = current_user_id }
-      ).run!
+      import = ImportUserCSV.new(content: csv_content) do
+        after_build do |model|
+          model.created_by_user_id = current_user_id
+        end
+      end
+
+      import.run!
 
       model = User.find_by_email("bob@example.com")
 

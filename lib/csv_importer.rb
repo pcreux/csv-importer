@@ -32,6 +32,7 @@ module CSVImporter
 
   def self.included(klass)
     klass.extend(Dsl)
+    klass.include(Dsl)
     klass.define_singleton_method(:config) do
       @config ||= Config.new
     end
@@ -45,11 +46,12 @@ module CSVImporter
   #   .new(file: my_csv_file)
   #   .new(path: "subscribers.csv", model: newsletter.subscribers)
   #
-  def initialize(*args)
+  def initialize(*args, &block)
     @csv = CSVReader.new(*args)
     @config = self.class.config.dup
     @config.attributes = args.last
     @report = Report.new
+    instance_exec(&block) if block
   end
 
   attr_reader :csv, :report, :config
