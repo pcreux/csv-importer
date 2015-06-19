@@ -409,7 +409,7 @@ bob@example.com,false,,in,,,"""|
     expect(import.message).to eq "Unclosed quoted field on line 3."
   end
 
-  it "column matching via regexp" do
+  it "matches columns via regexp" do
     csv_content = %|Email Address,confirmed,first_name,last_name,,
 bob@example.com,false,bob,,|
 
@@ -420,4 +420,6 @@ bob@example.com,false,bob,,|
     expect(import).to be_success
     expect(import.message).to eq "Import completed: 1 created"
   end
+
+
 end
