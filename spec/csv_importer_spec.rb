@@ -7,6 +7,7 @@ describe CSVImporter do
     include Virtus.model
     include ActiveModel::Model
 
+    attribute :id
     attribute :email
     attribute :f_name
     attribute :l_name
@@ -21,12 +22,12 @@ describe CSVImporter do
     end
 
     def persisted?
-      @persisted ||= false
+      !!id
     end
 
     def save
       if valid?
-        @persisted = true
+        @id = rand(100)
       end
     end
 
@@ -279,6 +280,16 @@ MARK@EXAMPLE.COM,false,mark,new_last_name"
         l_name: "new_last_name",
         confirmed_at: nil
       )
+    end
+
+    it "allows for missing identifiers" do
+      csv_content = "email,confirmed,first_name,last_name
+mark-new@example.com,false,mark,new_last_name"
+      import = ImportUserCSVByFirstName.new(content: csv_content, identifier: :id)
+
+      import.run!
+
+      expect(import.report.created_rows.size).to eq(1)
     end
 
     it "handles errors just fine" do

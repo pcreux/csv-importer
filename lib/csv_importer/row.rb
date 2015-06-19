@@ -9,17 +9,12 @@ module CSVImporter
     attribute :header, Header
     attribute :row_array, Array[String]
     attribute :model_klass
-    attribute :identifier
+    attribute :identifier, Symbol
 
     # The model to be persisted
     def model
       @model ||= begin
-        model = if identifier
-          find_or_build_model
-        else
-          build_model
-        end
-
+        model = find_or_build_model
         set_attributes(model)
       end
     end
@@ -78,10 +73,17 @@ module CSVImporter
     end
 
     def find_or_build_model
+      find_model || build_model
+    end
+
+    def find_model
+      return nil if identifier.nil?
+
       model = build_model
       set_attributes(model)
-      value = model.public_send(identifier)
-      model_klass.public_send("find_by_#{identifier}", value) || build_model
+      if value = model.public_send(identifier)
+        model_klass.public_send("find_by_#{identifier}", value)
+      end
     end
 
     def build_model
