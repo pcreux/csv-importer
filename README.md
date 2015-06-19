@@ -157,37 +157,19 @@ Now, email could also be spelled "e-mail", or "mail", or even "courriel"
 
 
 ```ruby
-class ImportUserCSV
-  include CSVImporter
-
-  model User
-
   column :email, as: [/e.?mail/i, "courriel"]
-end
 ```
 
 Nice, emails should be downcased though, so let's do this.
 
 ```ruby
-class ImportUserCSV
-  include CSVImporter
-
-  model User
-
   column :email, as: [/e.?mail/i, "courriel"], to: ->(email) { email.downcase if email }
-end
 ```
 
 If you need to do more advanced stuff, you've got access to the model:
 
 ```ruby
-class ImportUserCSV
-  include CSVImporter
-
-  model User
-
   column :email, as: [/e.?mail/i, "courriel"], to: ->(email, user) { user.email = email.downcase; model.super_user! if email[/@brewhouse.io\z/] }
-end
 ```
 
 Now, what if the user does not provide the email column? It's not worth
