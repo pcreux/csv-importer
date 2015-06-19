@@ -48,6 +48,7 @@ guard :rspec, cmd: "bundle exec rspec" do
   ruby = dsl.ruby
   dsl.watch_spec_files_for(ruby.lib_files)
 
-  watch(%r{^lib/(.+)\.rb$}) { |m| "spec/#{m[1]}_spec.rb" }
+  # Specs are fast, let's run them all!
+  watch(%r{^lib/(.+)\.rb$}) { |m| "spec" }
 
 end
