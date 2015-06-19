@@ -61,8 +61,10 @@ module CSVImporter
 
   # Initialize and return the `Row`s for the current CSV file
   def rows
-    csv.rows.map { |row_array| Row.new(header: header, row_array: row_array,
-                                       model_klass: config.model, identifier: config.identifier) }
+    csv.rows.map do |row_array|
+      Row.new(header: header, row_array: row_array, model_klass: config.model,
+              identifier: config.identifier, after_build: config.after_build)
+    end
   end
 
   def valid_header?

@@ -13,6 +13,7 @@ describe CSVImporter do
     attribute :f_name
     attribute :l_name
     attribute :confirmed_at
+    attribute :created_by_user_id
 
     validates_presence_of :email
     validates_format_of :email, with: /[^@]+@[^@]/ # contains one @ symbol
@@ -92,6 +93,10 @@ describe CSVImporter do
     identifier :f_name
 
     when_invalid :abort
+
+    after_build do |model|
+      model.email.downcase! if model.email
+    end
   end
 
   before do
@@ -427,5 +432,33 @@ bob@example.com,false,bob,,|
     expect(import.message).to eq "Import completed: 1 created"
   end
 
+  describe ".after_build" do
 
+    it "allows you to update attributes" do
+      csv_content = "email,confirmed,first_name,last_name
+BOB@example.com,true,bob,,"
+
+      # This importer downcases emails after build
+      import = ImportUserCSVByFirstName.new(
+        content: csv_content,
+      ).run!
+
+      expect(User.store.map(&:email)).to include "bob@example.com"
+    end
+
+    it "allows you to set attributes at runtime" do
+      csv_content = "email,confirmed,first_name,last_name
+  bob@example.com,true,bob,,"
+      current_user_id = 3
+
+      import = ImportUserCSV.new(
+        content: csv_content,
+        after_build: -> (model) { model.created_by_user_id = current_user_id }
+      ).run!
+
+      model = User.find_by_email("bob@example.com")
+
+      expect(model.created_by_user_id).to eq(current_user_id)
+    end
+  end # describe ".after_build"
 end

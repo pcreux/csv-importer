@@ -17,5 +17,9 @@ module CSVImporter
     def when_invalid(action)
       csv_importer_config.when_invalid = action
     end
+
+    def after_build(&block)
+      csv_importer_config.after_build = block
+    end
   end
 end

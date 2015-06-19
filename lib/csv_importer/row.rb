@@ -10,6 +10,7 @@ module CSVImporter
     attribute :row_array, Array[String]
     attribute :model_klass
     attribute :identifier, Symbol
+    attribute :after_build, Proc, default: proc { ->(model) {} }
 
     # The model to be persisted
     def model
@@ -34,6 +35,8 @@ module CSVImporter
 
         set_attribute(model, column_definition, value)
       end
+
+      after_build.call(model)
 
       model
     end
