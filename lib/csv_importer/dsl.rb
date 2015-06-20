@@ -19,7 +19,7 @@ module CSVImporter
     end
 
     def after_build(&block)
-      config.after_build = block
+      config.after_build(block)
     end
   end
 end

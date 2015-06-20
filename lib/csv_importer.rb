@@ -65,7 +65,7 @@ module CSVImporter
   def rows
     csv.rows.map do |row_array|
       Row.new(header: header, row_array: row_array, model_klass: config.model,
-              identifier: config.identifier, after_build: config.after_build)
+              identifier: config.identifier, after_build_blocks: config.after_build_blocks)
     end
   end
 

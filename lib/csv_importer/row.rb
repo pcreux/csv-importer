@@ -10,7 +10,7 @@ module CSVImporter
     attribute :row_array, Array[String]
     attribute :model_klass
     attribute :identifier, Symbol
-    attribute :after_build, Proc, default: proc { ->(model) {} }
+    attribute :after_build_blocks, Array[Proc], default: []
 
     # The model to be persisted
     def model
@@ -29,14 +29,19 @@ module CSVImporter
     def set_attributes(model)
       header.columns.each do |column|
         value = csv_attributes[column.name]
-        column_definition = column.definition
+        begin
+          value = value.dup if value
+        rescue TypeError
+          # can't dup Symbols, Integer etc...
+        end
 
+        column_definition = column.definition
         next if column_definition.nil?
 
         set_attribute(model, column_definition, value)
       end
 
-      after_build.call(model)
+      after_build_blocks.each { |block| block.call(model) }
 
       model
     end

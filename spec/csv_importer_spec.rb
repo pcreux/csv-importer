@@ -28,10 +28,14 @@ describe CSVImporter do
     end
 
     def save
-      if valid?
+      return false unless valid?
+
+      unless persisted?
         @id = rand(100)
         self.class.store << self
       end
+
+      true
     end
 
     def self.find_by_email(email)
@@ -434,7 +438,7 @@ bob@example.com,false,bob,,|
 
   describe ".after_build" do
 
-    it "allows you to update attributes" do
+    it "overwrites attributes" do
       csv_content = "email,confirmed,first_name,last_name
 BOB@example.com,true,bob,,"
 
@@ -446,7 +450,7 @@ BOB@example.com,true,bob,,"
       expect(User.store.map(&:email)).to include "bob@example.com"
     end
 
-    it "allows you to set attributes at runtime" do
+    it "overwrites attributes at runtime" do
       csv_content = "email,confirmed,first_name,last_name
   bob@example.com,true,bob,,"
       current_user_id = 3
@@ -461,6 +465,29 @@ BOB@example.com,true,bob,,"
 
       model = User.find_by_email("bob@example.com")
 
+      expect(model.created_by_user_id).to eq(current_user_id)
+    end
+
+    it "supports multiple blocks to be ran" do
+      csv_content = "email,confirmed,first_name,last_name
+  BOB@example.com,true,bob,,"
+      current_user_id = 3
+
+      import = ImportUserCSVByFirstName.new(content: csv_content) do
+        after_build do |model|
+          model.created_by_user_id = current_user_id
+        end
+
+        after_build do |model|
+          model.email.gsub!('@', '+imported@') if model.email
+        end
+      end
+
+      import.run!
+
+      expect(User.store.map(&:email)).to include "bob+imported@example.com"
+
+      model = User.find_by_email("bob+imported@example.com")
       expect(model.created_by_user_id).to eq(current_user_id)
     end
   end # describe ".after_build"

@@ -7,7 +7,11 @@ module CSVImporter
     attribute :column_definitions, Array[ColumnDefinition], default: proc { [] }
     attribute :identifier, Symbol
     attribute :when_invalid, Symbol, default: proc { :skip }
-    attribute :after_build, Proc, default: proc { ->(model) {} }
+    attribute :after_build_blocks, Array[Proc], default: []
+
+    def after_build(block)
+      self.after_build_blocks << block
+    end
   end
 end
 
