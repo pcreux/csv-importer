@@ -266,7 +266,7 @@ import = ImportUserCSV.new(file: my_file, model: team.users)
 # or
 
 import = ImportUserCSV.new(file: my_file) do
-  model: team.users
+  model team.users
 end
 ```
 
