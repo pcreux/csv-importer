@@ -30,12 +30,17 @@ require "csv_importer/dsl"
 module CSVImporter
   class Error < StandardError; end
 
+  # Setup DSL and config object
   def self.included(klass)
     klass.extend(Dsl)
-    klass.include(Dsl)
     klass.define_singleton_method(:config) do
       @config ||= Config.new
     end
+  end
+
+  # Instance level config will run against this configurator
+  class Configurator < Struct.new(:config)
+    include Dsl
   end
 
   # Defines the path, file or content of the csv file.
@@ -51,7 +56,7 @@ module CSVImporter
     @config = self.class.config.dup
     @config.attributes = args.last
     @report = Report.new
-    instance_exec(&block) if block
+    Configurator.new(@config).instance_exec(&block) if block
   end
 
   attr_reader :csv, :report, :config
