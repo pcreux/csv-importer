@@ -1,6 +1,12 @@
 # Change Log
 
-### v0.1.3
+All notable changes to this project will be documented in this file.
+
+## Unreleased
+
+## [0.1.3] - 2015-06-19
+
+### Added
 
 * You can now change the configuration at runtime. Example:
 
@@ -19,15 +25,19 @@ before saving it.
   enables you to use `id` as an identifier and import new entries
 without having to provide an `id`
 
-### v0.1.2
+## [0.1.2] - 2015-06-15
+
+### Fixed
 
 * `run!` was not *returning* a report object when the header was invalid.
 
-### v0.1.1
+## [0.1.1] - 2015-06-12
+
+### Changed
 
 * When calling `run!` on an import with invalid header we update the
 report object instead of raising an exception.
 
-### v0.1.0
+## [0.1.0] - 2015-06-11
 
 * Initial Release
