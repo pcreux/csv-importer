@@ -337,6 +337,21 @@ INVALID_EMAIL,bob
 
 The error returned should be: `{ "E-Mail" => "is invalid" }`
 
+### Complex quoting (Illegal quoting problem)
+
+```ruby
+CSV.parse("1,Glk,Lev \"The Black Spider\" Yashin,USSR")
+  # => CSV::MalformedCSVError: Illegal quoting in line 1.
+```
+
+The problem is that the CSV comma-delimited text should entirely surround by `"`
+not in part or do not contain `"` at all. You can pass `quote_char` option.
+
+```ruby
+CSV.parse("1,Glk,Lev \"The Black Spider\" Yashin,USSR", quote_char: "\x00")
+  # => [ ["1", "Glk", "Lev \"The Black Spider\" Yashin", "USSR"] ]
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment.

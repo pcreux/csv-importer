@@ -7,12 +7,13 @@ module CSVImporter
     attribute :content, String
     attribute :file # IO
     attribute :path, String
+    attribute :quote_char, String, default: '"'
 
     def csv_rows
       @csv_rows ||= begin
         sane_content = sanitize_content(read_content)
         separator = detect_separator(sane_content)
-        cells = CSV.parse(sane_content, col_sep: separator)
+        cells = CSV.parse(sane_content, col_sep: separator, quote_char: quote_char)
         sanitize_cells(cells)
       end
     end
