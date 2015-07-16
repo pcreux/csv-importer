@@ -372,10 +372,20 @@ bob@example.com   ,  true,   bob   ,,"
     expect { import.run! }.to_not raise_error
   end
 
-  it "can change quote_char value" do
-    import = ImportUserCSV.new(content: "", quote_char: "\x00")
+  it "supports custom quote_char value" do
+    csv_content = "email,confirmed,first_name,last_name
+bob@example.com   ,  true,   bob   , \"the dude\" jones,"
+    import = ImportUserCSV.new(content: csv_content, quote_char: "\x00")
 
-    expect(import.csv.quote_char).to eq "\x00"
+    import.run!
+
+    model = import.report.created_rows.first.model
+    expect(model).to have_attributes(
+      email: "bob@example.com",
+      confirmed_at: Time.new(2012),
+      f_name: "bob",
+      l_name: "\"the dude\" jones"
+    )
   end
 
   describe "#when_invalid" do
