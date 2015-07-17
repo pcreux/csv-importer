@@ -29,5 +29,9 @@ module CSVImporter
       expect(reader.header).to eq ["email", "first_name", "last_name"]
     end
 
+    it "supports custom quote character" do
+      reader = CSVReader.new(content: "first_name,last_name\n'bob','the builder'", quote_char: "'")
+      expect(reader.rows).to eq [["bob", "the builder"]]
+    end
   end
 end
