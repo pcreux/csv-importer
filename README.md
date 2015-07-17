@@ -337,10 +337,17 @@ INVALID_EMAIL,bob
 
 The error returned should be: `{ "E-Mail" => "is invalid" }`
 
-### Complex quoting (Illegal quoting problem)
+### Custom quote char
+
+You can handle exotic quote chars with the `quote_char` option.
+
+```csv
+email,name
+bob@example.com,'bob "elvis" wilson'
+```
 
 ```ruby
-import = ImportUserCSV.new(content: "email,name\nbob@example.com, bob \"the dude\"")
+import = ImportUserCSV.new(content: csv_content)
 import.run!
 import.report.status
   # => :invalid_csv_file
@@ -348,13 +355,12 @@ import.report.messages
   # => CSV::MalformedCSVError: Illegal quoting in line 2.
 ```
 
-The problem is that the CSV comma-delimited text should entirely surround by `"`
-not in part or do not contain `"` at all. You can pass `quote_char` option.
+Let's provide a valid quote char:
 
 ```ruby
-import = ImportUserCSV.new(content: "email,name\nbob@example.com, bob \"the dude\"", quote_char: "'")
+import = ImportUserCSV.new(content: csv_content, quote_char: "'")
 import.run!
-  # => [ ["bob@example.com", "bob \"the dude\""] ]
+  # => [ ["bob@example.com", "bob \"elvis\" wilson"] ]
 ```
 
 ## Development
