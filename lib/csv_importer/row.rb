@@ -90,7 +90,7 @@ module CSVImporter
       model = build_model
       set_attributes(model)
       if value = model.public_send(identifier)
-        model_klass.public_send("find_by_#{identifier}", value)
+        model_klass.find_by(identifier => value)
       end
     end
 

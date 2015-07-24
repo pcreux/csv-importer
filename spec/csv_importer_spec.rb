@@ -38,16 +38,8 @@ describe CSVImporter do
       true
     end
 
-    def self.find_by_email(email)
-      store.find { |u| u.email == email }
-    end
-
-    def self.find_by_f_name(name)
-      store.find { |u| u.f_name == name }
-    end
-
-    def self.find_by_l_name(name)
-      store.find { |u| u.l_name == name }
+    def self.find_by(attributes)
+      store.find { |u| attributes.all? { |k, v| u.attributes[k] == v } }
     end
 
     def self.reset_store!
@@ -479,7 +471,7 @@ BOB@example.com,true,bob,,"
 
       import.run!
 
-      model = User.find_by_email("bob@example.com")
+      model = User.find_by(email: "bob@example.com")
 
       expect(model.created_by_user_id).to eq(current_user_id)
     end
@@ -503,7 +495,7 @@ BOB@example.com,true,bob,,"
 
       expect(User.store.map(&:email)).to include "bob+imported@example.com"
 
-      model = User.find_by_email("bob+imported@example.com")
+      model = User.find_by(email: "bob+imported@example.com")
       expect(model.created_by_user_id).to eq(current_user_id)
     end
   end # describe ".after_build"
