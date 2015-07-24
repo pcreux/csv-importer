@@ -24,14 +24,16 @@ Reporting progress and errors to the end-user is also key for a good
 experience.
 
 I went through this many times so I decided to build CSV Importer to
-save us a lot of trouble.
-
+save us the trouble.
 
 CSV Importer provides:
 
 * a DSL to define the mapping between CSV columns and your model
 * good reporting to the end user
 * support for wild encodings and CSV formats.
+
+It is compatible with ActiveRecord 4+ and any ORM that implements
+the class methods `transaction` and `find_by` and the instance method `save`.
 
 ## Usage tldr;
 
