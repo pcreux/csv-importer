@@ -275,13 +275,12 @@ import = ImportUserCSV.new(file: my_file) do
 end
 ```
 
-### Preset attributes
+### `after_build` and `after_save` callbacks
 
 You can preset attributes (or perform any changes to the model) at
 configuration or runtime using `after_build`
 
 ```ruby
-
 class ImportUserCSV
   model User
 
@@ -297,6 +296,20 @@ end
 import = ImportUserCSV.new(file: my_file) do
   after_build do |user|
     user.created_by_user = current_user
+  end
+end
+```
+
+The `after_save` callback is run after each call to the method `save` no
+matter it fails or succeeds. It is quite handy to keep track of
+progress.
+
+```ruby
+progress_bar = ProgressBar.new
+
+UserImport.new(file: my_file) do
+  after_save do |user|
+    progress_bar.increment
   end
 end
 ```

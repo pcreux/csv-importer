@@ -6,6 +6,18 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* `after_save` callback.
+
+```ruby
+progress_bar = ProgressBar.new
+
+UserImport.new(file: my_file) do
+  after_save do |user|
+    progress_bar.increment
+  end
+end
+```
+
 * You can define a composite identifier made of multiple columns.
 
 ```ruby
