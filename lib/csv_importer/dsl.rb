@@ -10,8 +10,8 @@ module CSVImporter
       config.column_definitions << options.merge(name: name)
     end
 
-    def identifier(identifier)
-      config.identifier = identifier
+    def identifier(*identifier)
+      config.identifiers = identifier
     end
 
     def when_invalid(action)

@@ -30,7 +30,7 @@ require "csv_importer/dsl"
 module CSVImporter
   class Error < StandardError; end
 
-  # Setup DSL and config object
+   # Setup DSL and config object
   def self.included(klass)
     klass.extend(Dsl)
     klass.define_singleton_method(:config) do
@@ -42,6 +42,7 @@ module CSVImporter
   class Configurator < Struct.new(:config)
     include Dsl
   end
+
 
   # Defines the path, file or content of the csv file.
   # Also allows you to overwrite the configuration at runtime.
@@ -70,7 +71,7 @@ module CSVImporter
   def rows
     csv.rows.map do |row_array|
       Row.new(header: header, row_array: row_array, model_klass: config.model,
-              identifier: config.identifier, after_build_blocks: config.after_build_blocks)
+              identifier: config.identifiers, after_build_blocks: config.after_build_blocks)
     end
   end
 
@@ -97,4 +98,3 @@ module CSVImporter
     @report = Report.new(status: :invalid_csv_file, parser_error: e.message)
   end
 end
-
