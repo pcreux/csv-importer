@@ -86,20 +86,18 @@ module CSVImporter
     end
 
     def find_model
-      return nil if identifiers.blank?
+      return nil if identifiers.empty?
 
       model = build_model
       set_attributes(model)
-      model_klass.public_send("find_by", build_args(model))
+      query = Hash[
+        identifiers.map { |identifier| [ identifier, model.public_send(identifier) ] }
+      ]
+      model_klass.find_by(query)
     end
 
     def build_model
       model_klass.new
-    end
-
-    def build_args(model)
-      values = identifiers.map{|idn| model.public_send(idn)}
-      identifiers.zip(values).to_h
     end
   end
 end

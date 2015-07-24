@@ -10,9 +10,11 @@ module CSVImporter
       config.column_definitions << options.merge(name: name)
     end
 
-    def identifier(*identifier)
-      config.identifiers = identifier
+    def identifier(*identifiers)
+      config.identifiers = identifiers
     end
+
+    alias_method :identifiers, :identifier
 
     def when_invalid(action)
       config.when_invalid = action

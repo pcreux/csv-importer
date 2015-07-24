@@ -46,7 +46,7 @@ describe CSVImporter do
       @store = Set.new
 
       User.new(
-        email: "mark@example.com", f_name: "mark", l_name: "old last name", confirmed_at: Time.new(2012)
+        email: "mark@example.com", f_name: "mark", l_name: "lee", confirmed_at: Time.new(2012)
       ).save
 
       @store
@@ -292,7 +292,9 @@ MARK@EXAMPLE.COM,false,mark,new_last_name"
     it "allows for missing identifiers" do
       csv_content = "email,confirmed,first_name,last_name
 mark-new@example.com,false,mark,new_last_name"
-      import = ImportUserCSVByFirstName.new(content: csv_content, identifier: :id)
+      import = ImportUserCSVByFirstName.new(content: csv_content) do
+        identifier :id
+      end
 
       import.run!
 
@@ -323,7 +325,20 @@ mark@example.com,false,,new_last_name"
       )
     end
 
-  end
+    it "handles multiple identifiers" do
+      csv_content = "email,confirmed,first_name,last_name
+updated-mark@example.com,false,mark,lee
+new-mark@example.com,false,mark,moo"
+      import = ImportUserCSV.new(content: csv_content) do
+        identifiers :f_name, :l_name
+      end
+
+      import.run!
+
+      expect(import.report.message).to eq "Import completed: 1 created, 1 updated"
+    end
+
+  end # describe "find or create"
 
   it "strips cells" do
     csv_content = "email,confirmed,first_name,last_name
@@ -403,17 +418,16 @@ mark@example.com,false,mark," # missing first names
   describe "updating config on the fly" do
     it "works" do
       csv_content = "email,confirmed,first_name,last_name
-new-mark@example.com,false,new mark,old last name"
+new-mark@example.com,false,new mark,lee"
 
-      import = ImportUserCSV.new(
-        content: csv_content,
-        identifier: :l_name
-      )
+      import = ImportUserCSV.new(content: csv_content) do
+        identifiers :l_name
+      end
 
       report = import.run!
 
-      expect(import.report.created_rows.size).to eq(0)
-      expect(import.report.updated_rows.size).to eq(1)
+      expect(report.created_rows.size).to eq(0)
+      expect(report.updated_rows.size).to eq(1)
 
     end
   end
@@ -423,10 +437,7 @@ new-mark@example.com,false,new mark,old last name"
 bob@example.com,"false"
 bob@example.com,false,,in,,,"""|
 
-    import = ImportUserCSV.new(
-      content: csv_content,
-      identifier: :l_name
-    ).run!
+    import = ImportUserCSV.new(content: csv_content).run!
 
     expect(import).to_not be_success
     expect(import.message).to eq "Unclosed quoted field on line 3."
@@ -436,9 +447,7 @@ bob@example.com,false,,in,,,"""|
     csv_content = %|Email Address,confirmed,first_name,last_name,,
 bob@example.com,false,bob,,|
 
-    import = ImportUserCSV.new(
-      content: csv_content,
-    ).run!
+    import = ImportUserCSV.new(content: csv_content).run!
 
     expect(import).to be_success
     expect(import.message).to eq "Import completed: 1 created"
@@ -451,9 +460,7 @@ bob@example.com,false,bob,,|
 BOB@example.com,true,bob,,"
 
       # This importer downcases emails after build
-      ImportUserCSVByFirstName.new(
-        content: csv_content,
-      ).run!
+      ImportUserCSVByFirstName.new(content: csv_content).run!
 
       expect(User.store.map(&:email)).to include "bob@example.com"
     end

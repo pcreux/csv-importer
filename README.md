@@ -217,6 +217,13 @@ end
 
 And yes, we'll look for an existing record using the downcased email. :)
 
+You can also define a composite identifier:
+
+```ruby
+  # Update records with matching company_id AND employee_id
+  identifier :company_id, :employee_id
+```
+
 ### Skip or Abort on error
 
 By default, we skip invalid records and report errors back to the user.
