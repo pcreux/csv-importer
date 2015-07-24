@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## [0.2.0] - 2015-07-24
+
 ### Added
 
 * `after_save` callback.
