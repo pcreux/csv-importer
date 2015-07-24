@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+* You can define a composite identifier made of multiple columns.
+
+```ruby
+  # Update records with matching company_id AND employee_id
+  identifier :company_id, :employee_id
+```
+
 * You can set a custom `quote_char` at runtime. ([#26][] by [@shvetsovdm][])
 
 ```ruby
