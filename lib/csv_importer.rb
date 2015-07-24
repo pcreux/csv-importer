@@ -90,7 +90,8 @@ module CSVImporter
   # Run the import. Return a Report.
   def run!
     if valid_header?
-      @report = Runner.call(rows: rows, when_invalid: config.when_invalid)
+      @report = Runner.call(rows: rows, when_invalid: config.when_invalid,
+                            after_save_blocks: config.after_save_blocks)
     else
       @report
     end

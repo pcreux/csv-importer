@@ -11,6 +11,7 @@ module CSVImporter
 
     attribute :rows, Array[Row]
     attribute :when_invalid, Symbol
+    attribute :after_save_blocks, Array[Proc], default: []
 
     attribute :report, Report, default: proc { Report.new }
 
@@ -58,6 +59,7 @@ module CSVImporter
           end
 
           add_to_report(row, tags)
+          after_save_blocks.each { |block| block.call(row.model) }
         end
       end
     end

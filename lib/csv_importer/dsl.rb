@@ -23,5 +23,9 @@ module CSVImporter
     def after_build(&block)
       config.after_build(block)
     end
+
+    def after_save(&block)
+      config.after_save(block)
+    end
   end
 end

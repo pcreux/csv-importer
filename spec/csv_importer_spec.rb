@@ -506,4 +506,31 @@ BOB@example.com,true,bob,,"
       expect(model.created_by_user_id).to eq(current_user_id)
     end
   end # describe ".after_build"
+
+  describe ".after_save" do
+    it "is triggered after each save and supports multiple blocks" do
+      csv_content = "email,first_name,last_name
+                     bob@example.com,bob,,
+                     invalid,bob,,"
+
+      success_array = []
+      saves_count = 0
+
+      import = ImportUserCSV.new(content: csv_content) do
+        after_save do |user|
+          success_array << user.persisted?
+        end
+
+        after_save do
+          saves_count += 1
+        end
+      end
+
+      expect {
+        import.run!
+      }.to change { success_array }.from([]).to([true, false])
+
+      expect(saves_count).to eq 2
+    end
+  end
 end
