@@ -50,7 +50,7 @@ class ImportUserCSV
   column :last_name,  as: [ /last.?name/i, "nom" ]
   column :published,  to: ->(published, user) { user.published_at = published ? Time.now : nil }
 
-  identifier :email # will find_or_update via :email
+  identifier :email # will update_or_create via :email
 
   when_invalid :skip # or :abort
 end
