@@ -59,7 +59,7 @@ module CSVImporter
           end
 
           add_to_report(row, tags)
-          after_save_blocks.each { |block| block.call(row.model) }
+          after_save_blocks.each { |block| block.call(row.model, row.csv_attributes) }
         end
       end
     end
