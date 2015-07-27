@@ -505,6 +505,23 @@ BOB@example.com,true,bob,,"
       model = User.find_by(email: "bob+imported@example.com")
       expect(model.created_by_user_id).to eq(current_user_id)
     end
+
+    it "supports acccessing other row attributes" do
+      csv_content = "email,confirmed,first_name,last_name,admin_id
+  bob@example.com,true,bob,,987"
+
+      import = ImportUserCSV.new(content: csv_content) do
+        after_build do |model, attributes|
+          model.created_by_user_id = attributes["admin_id"]
+        end
+      end
+
+      import.run!
+
+      model = User.find_by(email: "bob@example.com")
+
+      expect(model.created_by_user_id).to eq("987")
+    end
   end # describe ".after_build"
 
   describe ".after_save" do
@@ -531,6 +548,24 @@ BOB@example.com,true,bob,,"
       }.to change { success_array }.from([]).to([true, false])
 
       expect(saves_count).to eq 2
+    end
+
+    it "supports acccessing other row attributes" do
+      csv_content = "email,confirmed,first_name,last_name,admin_id
+  bob@example.com,true,bob,,987"
+
+      import = ImportUserCSV.new(content: csv_content) do
+        after_save do |model, attributes|
+          model.created_by_user_id = attributes["admin_id"]
+          model.save
+        end
+      end
+
+      import.run!
+
+      model = User.find_by(email: "bob@example.com")
+
+      expect(model.created_by_user_id).to eq("987")
     end
   end
 end

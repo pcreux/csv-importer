@@ -42,7 +42,7 @@ module CSVImporter
         set_attribute(model, column_definition, value)
       end
 
-      after_build_blocks.each { |block| block.call(model) }
+      after_build_blocks.each { |block| block.call(model, csv_attributes) }
 
       model
     end
