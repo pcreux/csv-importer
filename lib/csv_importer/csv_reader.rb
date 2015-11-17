@@ -12,9 +12,11 @@ module CSVImporter
     def csv_rows
       @csv_rows ||= begin
         sane_content = sanitize_content(read_content)
-        separator = detect_separator(sane_content)
-        cells = CSV.parse(sane_content, col_sep: separator, quote_char: quote_char)
-        sanitize_cells(cells)
+        separator    = detect_separator(sane_content)
+        cells        = CSV.parse(sane_content, col_sep: separator, quote_char: quote_char)
+        sane_cells   = sanitize_cells(cells)
+        
+        remove_comments(sane_cells)
       end
     end
 
@@ -52,6 +54,17 @@ module CSVImporter
 
     def detect_separator(csv_content)
       SEPARATORS.sort_by { |separator| csv_content.count(separator) }.last
+    end
+
+    # Strip commented rows
+    def remove_comments(rows)
+      comment_char = "#"
+
+      rows.select {|row|
+        first_column = row.first
+        # If first character is #, skip the line
+        not first_column.match(/^#{comment_char}/)
+      }
     end
 
     # Strip cells
