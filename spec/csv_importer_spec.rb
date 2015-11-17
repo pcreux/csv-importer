@@ -134,6 +134,44 @@ BOB@example.com,true,bob,,"
         "confirmed_at" => Time.new(2012)
       )
     end
+
+    it 'imports even if there are comment lines' do
+      csv_content = "#this is technically not allowed in CSV but ... users!\nemail,confirmed,first_name,last_name
+BOB@example.com,true,bob,,"
+
+      import = ImportUserCSV.new(content: csv_content)
+
+      expect(import.valid_header?).to be_truthy
+
+      expect(import.rows.size).to eq(1)
+
+      row = import.rows.first
+
+      expect(row.csv_attributes).to eq(
+        {
+          "email" => "BOB@example.com",
+          "first_name" => "bob",
+          "last_name" => nil,
+          "confirmed" => "true"
+        }
+      )
+
+      import.run!
+
+      expect(import.report.valid_rows.size).to eq(1)
+      expect(import.report.created_rows.size).to eq(1)
+
+      expect(import.report.message).to eq "Import completed: 1 created"
+
+      model = import.report.valid_rows.first.model
+      expect(model).to be_persisted
+      expect(model).to have_attributes(
+        "email" => "bob@example.com", # was downcased!
+        "f_name" => "bob",
+        "l_name" => nil,
+        "confirmed_at" => Time.new(2012)
+      )
+    end
   end
 
   describe "invalid records" do
