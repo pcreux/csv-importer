@@ -113,7 +113,7 @@ BOB@example.com,true,bob,,"
         {
           "email" => "BOB@example.com",
           "first_name" => "bob",
-          "last_name" => nil,
+          "last_name" => "",
           "confirmed" => "true"
         }
       )
@@ -130,7 +130,7 @@ BOB@example.com,true,bob,,"
       expect(model).to have_attributes(
         "email" => "bob@example.com", # was downcased!
         "f_name" => "bob",
-        "l_name" => nil,
+        "l_name" => "",
         "confirmed_at" => Time.new(2012)
       )
     end
@@ -233,7 +233,7 @@ mark@example.com,false,mark,new_last_name"
       expect(model).to have_attributes(
         email: "bob@example.com",
         f_name: "bob",
-        l_name: nil,
+        l_name: "",
         confirmed_at: Time.new(2012)
       )
 
@@ -319,7 +319,7 @@ mark@example.com,false,,new_last_name"
       expect(model).to be_persisted
       expect(model).to have_attributes(
         email: "mark@example.com",
-        f_name: nil,
+        f_name: "",
         l_name: "new_last_name",
         confirmed_at: nil
       )
@@ -352,7 +352,7 @@ bob@example.com   ,  true,   bob   ,,"
       email: "bob@example.com",
       confirmed_at: Time.new(2012),
       f_name: "bob",
-      l_name: nil
+      l_name: ""
     )
   end
 
@@ -393,6 +393,16 @@ bob@example.com   ,  true,   bob   , \"the dude\" jones,"
       f_name: "bob",
       l_name: "\"the dude\" jones"
     )
+  end
+
+  it "converts empty cells to an empty string" do
+    csv_content = "email,confirmed,first_name,last_name
+,,,,"
+    import = ImportUserCSV.new(content: csv_content)
+
+    expect {
+      import.run!
+    }.to_not raise_error(NoMethodError, "undefined method `downcase' for nil:NilClass")
   end
 
   describe "#when_invalid" do

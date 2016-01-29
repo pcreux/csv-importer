@@ -13,7 +13,7 @@ module CSVImporter
       @csv_rows ||= begin
         sane_content = sanitize_content(read_content)
         separator = detect_separator(sane_content)
-        cells = CSV.parse(sane_content, col_sep: separator, quote_char: quote_char)
+        cells = CSV.parse(sane_content, col_sep: separator, quote_char: quote_char, skip_blanks: true)
         sanitize_cells(cells)
       end
     end
@@ -54,11 +54,11 @@ module CSVImporter
       SEPARATORS.sort_by { |separator| csv_content.count(separator) }.last
     end
 
-    # Strip cells
+    # Remove trailing white spaces and ensure we always return a string
     def sanitize_cells(rows)
       rows.map do |cells|
         cells.map do |cell|
-          cell.strip if cell
+          cell ? cell.strip : ""
         end
       end
     end

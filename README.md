@@ -169,7 +169,7 @@ Now, email could also be spelled "e-mail", or "mail", or even "courriel"
 Nice, emails should be downcased though, so let's do this.
 
 ```ruby
-  column :email, as: [/e.?mail/i, "courriel"], to: ->(email) { email.downcase if email }
+  column :email, as: [/e.?mail/i, "courriel"], to: ->(email) { email.downcase }
 ```
 
 If you need to do more advanced stuff, you've got access to the model:
@@ -209,7 +209,7 @@ class ImportUserCSV
 
   model User
 
-  column :email, to: ->(email) { email.downcase if email }
+  column :email, to: ->(email) { email.downcase }
 
   identifier :email
 end
@@ -236,7 +236,7 @@ class ImportUserCSV
 
   model User
 
-  column :email, to: ->(email) { email.downcase if email }
+  column :email, to: ->(email) { email.downcase }
 
   on_error :abort
 end
@@ -287,7 +287,7 @@ class ImportUserCSV
   column :email
 
   after_build do |user|
-    user.name = email.split('@').first if email
+    user.name = email.split('@').first
   end
 end
 
