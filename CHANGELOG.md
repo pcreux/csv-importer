@@ -4,8 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
 * Empty cells are now empty strings. You don't have to check for a nil
   value when applying a transformation anymore. [#33][]
+* You can now skip an import in the `after_build` callback:
+
+```ruby
+UserImport.new(file: csv_file) do
+  # Skip existing records
+  after_build do |user|
+    skip! if user.persisted?
+  end
+end
+```
 
 ## [0.2.0] - 2015-07-24
 
@@ -44,7 +56,7 @@ UserImport.new(file: csv_file, quote_char: "'")
 
 ```ruby
 UserImport.new(file: csv_file) do
-  after_build do
+  after_build do |user|
     user.import_by_user = current_user
   end
 end

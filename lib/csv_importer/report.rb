@@ -21,6 +21,8 @@ module CSVImporter
     attribute :updated_rows, Array[Row], default: proc { [] }
     attribute :failed_to_create_rows, Array[Row], default: proc { [] }
     attribute :failed_to_update_rows, Array[Row], default: proc { [] }
+    attribute :create_skipped_rows, Array[Row], default: proc { [] }
+    attribute :update_skipped_rows, Array[Row], default: proc { [] }
 
     attribute :message_generator, Class, default: proc { ReportMessage }
 

@@ -543,4 +543,20 @@ BOB@example.com,true,bob,,"
       expect(saves_count).to eq 2
     end
   end
+
+  describe "skipping" do
+    it "could skip via throw :skip" do
+      csv_content = "email,confirmed,first_name,last_name
+bob@example.com,true,bob,,
+mark@example.com,false,mark,new_last_name"
+      import = ImportUserCSV.new(content: csv_content) do
+        after_build do |user|
+          skip! if user.persisted?
+        end
+      end
+
+      import.run!
+      expect(import.report.message).to eq "Import completed: 1 created, 1 update skipped"
+    end
+  end
 end

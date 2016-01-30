@@ -52,10 +52,14 @@ module CSVImporter
             tags << :create
           end
 
-          if row.model.save
-            tags << :success
+          if row.skip?
+            tags << :skip
           else
-            tags << :failure
+            if row.model.save
+              tags << :success
+            else
+              tags << :failure
+            end
           end
 
           add_to_report(row, tags)
@@ -74,6 +78,10 @@ module CSVImporter
         report.updated_rows
       when [ :update, :failure ]
         report.failed_to_update_rows
+      when [ :create, :skip ]
+        report.create_skipped_rows
+      when [ :update, :skip ]
+        report.update_skipped_rows
       else
         raise "Invalid tags #{tags.inspect}"
       end
