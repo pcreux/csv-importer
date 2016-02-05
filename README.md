@@ -314,6 +314,20 @@ UserImport.new(file: my_file) do
 end
 ```
 
+### Skip import
+
+You can skip the import of a model by calling `skip!` in an
+`after_build` block:
+
+```ruby
+UserImport.new(file: csv_file) do
+  # Skip existing records
+  after_build do |user|
+    skip! if user.persisted?
+  end
+end
+```
+
 
 ### Validate the header
 

@@ -11,6 +11,7 @@ module CSVImporter
     attribute :model_klass
     attribute :identifiers, Array[Symbol]
     attribute :after_build_blocks, Array[Proc], default: []
+    attribute :skip, Boolean, default: false
 
     # The model to be persisted
     def model
@@ -42,7 +43,7 @@ module CSVImporter
         set_attribute(model, column_definition, value)
       end
 
-      after_build_blocks.each { |block| block.call(model) }
+      after_build_blocks.each { |block| instance_exec(model, &block) }
 
       model
     end
@@ -98,6 +99,10 @@ module CSVImporter
 
     def build_model
       model_klass.new
+    end
+
+    def skip!
+      self.skip = true
     end
   end
 end
