@@ -2,12 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
+## [0.3.0] - 2016-02-05
 
 ### Added
 
 * Empty cells are now empty strings. You don't have to check for a nil
   value when applying a transformation anymore.
+
+```ruby
+  # Prior to 0.3, an empty cell turns into `nil`
+  column :email, to: ->(email) { email.downcase unless email.nil? }
+
+  # From 0.3, an empty cell turns into `""`
+  column :email, to: ->(email) { email.downcase }
+```
+
 * You can now skip an import in the `after_build` callback:
 
 ```ruby
