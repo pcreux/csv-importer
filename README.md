@@ -244,7 +244,7 @@ end
 import = ImportUserCSV.new(content: "email\nbob@example.com\nINVALID_EMAIL")
 import.valid_header? # => true
 import.run!
-import.success? # => false
+import.report.success? # => false
 import.report.status # => :aborted
 import.report.message # => "Import aborted"
 ```
