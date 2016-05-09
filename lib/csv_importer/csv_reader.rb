@@ -8,12 +8,13 @@ module CSVImporter
     attribute :file # IO
     attribute :path, String
     attribute :quote_char, String, default: '"'
+    attribute :encoding, String, default: 'UTF-8:UTF-8'
 
     def csv_rows
       @csv_rows ||= begin
         sane_content = sanitize_content(read_content)
         separator = detect_separator(sane_content)
-        cells = CSV.parse(sane_content, col_sep: separator, quote_char: quote_char, skip_blanks: true)
+        cells = CSV.parse(sane_content, col_sep: separator, quote_char: quote_char, skip_blanks: true, encoding: encoding)
         sanitize_cells(cells)
       end
     end
@@ -43,8 +44,9 @@ module CSVImporter
     end
 
     def sanitize_content(csv_content)
+      internal_encoding = encoding.split(':').last
       csv_content
-        .encode(Encoding.find('UTF-8'), {invalid: :replace, undef: :replace, replace: ''}) # Remove invalid byte sequences
+        .encode(Encoding.find(internal_encoding), {invalid: :replace, undef: :replace, replace: ''}) # Remove invalid byte sequences
         .gsub(/\r\r?\n?/, "\n") # Replaces windows line separators with "\n"
     end
 

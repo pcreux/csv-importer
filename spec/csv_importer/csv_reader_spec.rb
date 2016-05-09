@@ -33,5 +33,10 @@ module CSVImporter
       reader = CSVReader.new(content: "first_name,last_name\n'bob','the builder'", quote_char: "'")
       expect(reader.rows).to eq [["bob", "the builder"]]
     end
+
+    it "supports custom encoding" do
+      reader = CSVReader.new(content: "メール,氏名".encode('SJIS'), encoding: 'SJIS:UTF-8')
+      expect(reader.header).to eq ["メール", "氏名"]
+    end
   end
 end
