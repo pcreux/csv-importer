@@ -399,6 +399,14 @@ import.run!
   # => [ ["bob@example.com", "bob \"elvis\" wilson"] ]
 ```
 
+### Custom encoding
+
+You can handle exotic encodings with the `encoding` option.
+
+```ruby
+ImportUserCSV.new(content: "メール,氏名".encode('SJIS'), encoding: 'SJIS:UTF-8')
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment.
