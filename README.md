@@ -228,7 +228,7 @@ You can also define a composite identifier:
 
 By default, we skip invalid records and report errors back to the user.
 There are times where you want your import to be an all or nothing. The
-`on_error` option is here for you.
+`when_invalid` option is here for you.
 
 ```ruby
 class ImportUserCSV
@@ -238,7 +238,7 @@ class ImportUserCSV
 
   column :email, to: ->(email) { email.downcase }
 
-  on_error :abort
+  when_invalid :abort
 end
 
 import = ImportUserCSV.new(content: "email\nbob@example.com\nINVALID_EMAIL")
