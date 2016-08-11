@@ -48,7 +48,7 @@ class ImportUserCSV
   column :email, to: ->(email) { email.downcase }, required: true
   column :first_name, as: [ /first.?name/i, /pr(é|e)nom/i ]
   column :last_name,  as: [ /last.?name/i, "nom" ]
-  column :published,  to: ->(published, user) { user.published_at = published ? Time.now : nil }
+  column :published,  to: ->(published, user) { user.published_at == published ? Time.now : nil }
 
   identifier :email # will update_or_create via :email
 
