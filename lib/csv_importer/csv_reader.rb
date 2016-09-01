@@ -37,7 +37,7 @@ module CSVImporter
       elsif file
         file.read
       elsif path
-        File.open(path).read
+        File.read(path, encoding: "UTF-8")
       else
         raise Error, "Please provide content, file, or path"
       end
