@@ -35,7 +35,7 @@ module CSVImporter
       if content
         content
       elsif file
-        file.read
+        File.read(file.temfile.to_path, encoding: encoding)
       elsif path
         File.read(path, encoding: encoding)
       else
