@@ -10,6 +10,14 @@ module CSVImporter
     attribute :after_build_blocks, Array[Proc], default: []
     attribute :after_save_blocks, Array[Proc], default: []
 
+    def initialize_copy(orig)
+      super
+      self.column_definitions = orig.column_definitions.dup
+      self.identifiers = orig.identifiers.dup
+      self.after_save_blocks = orig.after_save_blocks.dup
+      self.after_build_blocks = orig.after_build_blocks.dup
+    end
+
     def after_build(block)
       self.after_build_blocks << block
     end
