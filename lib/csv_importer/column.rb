@@ -6,5 +6,12 @@ module CSVImporter
 
     attribute :name, String
     attribute :definition, ColumnDefinition
+
+    # Return the data associated to the name (column_name[data])
+    def data
+      match = /.*\[(.*)\]/.match(name)
+      match[1] if match
+    end
+
   end
 end

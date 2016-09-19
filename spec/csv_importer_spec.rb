@@ -14,6 +14,7 @@ describe CSVImporter do
     attribute :l_name
     attribute :confirmed_at
     attribute :created_by_user_id
+    attribute :birthdate
 
     validates_presence_of :email
     validates_format_of :email, with: /[^@]+@[^@]/ # contains one @ symbol
@@ -574,6 +575,25 @@ BOB@example.com,true,bob,,"
       expect(import_1.config.identifiers).not_to equal(import_2.config.identifiers)
     end
   end
+
+  describe "column metadata" do
+    it "should parse column metadata" do
+      csv_content = "email,first_name,last_name,birthdate[%d/%m/%y]
+                     bob@example.com,bob,,25/03/75
+                     invalid,bob,,"
+
+
+      import = ImportUserCSV.new(content: csv_content) do
+        column :birthdate, as: /birthdate/, to: ->(date_string, model, column) {
+          model.birthdate = Date.strptime(date_string, column.data) rescue nil
+        }
+      end
+
+      import.run!
+      expect(import.report.created_rows.first.model.birthdate).to eql(Date.parse('1975-03-25'))
+    end
+  end
+
 
   describe "skipping" do
     it "could skip via throw :skip" do
