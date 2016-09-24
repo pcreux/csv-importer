@@ -19,6 +19,9 @@ module CSVImporter
         model = find_or_build_model
 
         set_attributes(model)
+
+        after_build_blocks.each { |block| instance_exec(model, &block) }
+        model
       end
     end
 
@@ -42,8 +45,6 @@ module CSVImporter
 
         set_attribute(model, column_definition, value)
       end
-
-      after_build_blocks.each { |block| instance_exec(model, &block) }
 
       model
     end
