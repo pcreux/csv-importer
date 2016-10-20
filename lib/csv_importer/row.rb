@@ -10,7 +10,7 @@ module CSVImporter
     attribute :row_array, Array[String]
     attribute :model_klass
     attribute :identifiers, Array[Symbol]
-    attribute :after_build_blocks, Array[Proc], default: []
+    attribute :after_build_blocks, Array[Proc], default: proc { [] }
     attribute :skip, Boolean, default: false
 
     # The model to be persisted
@@ -90,7 +90,9 @@ module CSVImporter
       return nil if identifiers.empty?
 
       model = build_model
+      old_skip = self.skip
       set_attributes(model)
+      self.skip = old_skip
       query = Hash[
         identifiers.map { |identifier| [ identifier, model.public_send(identifier) ] }
       ]

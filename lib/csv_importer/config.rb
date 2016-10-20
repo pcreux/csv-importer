@@ -17,6 +17,12 @@ module CSVImporter
     def after_save(block)
       self.after_save_blocks << block
     end
+
+    def dup
+      # Make sure we dup the attributes as well as variable itself
+      self.class.new(attribute_set.get(self))
+    end
+    alias clone dup
   end
 end
 
