@@ -332,7 +332,7 @@ end
 ### Validate the header
 
 On a web application, as soon as a CSV file is uploaded, you can check
-if it has the required columns. This is handy to fail early an provide
+if it has the required columns. This is handy to fail early and provide
 the user with a meaningful error message right away.
 
 ```ruby
