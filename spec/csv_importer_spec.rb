@@ -544,6 +544,20 @@ BOB@example.com,true,bob,,"
     end
   end
 
+  describe "config" do
+    it "is properly cloned" do
+      import = ImportUserCSV.new(content: "") do
+        after_build { }
+      end
+
+      import = ImportUserCSV.new(content: "") do
+        after_build { }
+      end
+
+      expect(import.config.after_build_blocks.length).to eq(1)
+    end
+  end
+
   describe "skipping" do
     it "could skip via throw :skip" do
       csv_content = "email,confirmed,first_name,last_name
@@ -557,6 +571,20 @@ mark@example.com,false,mark,new_last_name"
 
       import.run!
       expect(import.report.message).to eq "Import completed: 1 created, 1 update skipped"
+    end
+
+    it "doesn't call skip! twice" do
+      csv_content = "email,confirmed,first_name,last_name
+bob@example.com,true,bob,,
+mark@example.com,false,mark,new_last_name"
+      import = ImportUserCSV.new(content: csv_content) do
+        after_build do |user|
+          skip! unless user.persisted?
+        end
+      end
+
+      import.run!
+      expect(import.report.message).to eq "Import completed: 1 updated, 1 create skipped"
     end
   end
 end
