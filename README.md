@@ -7,11 +7,11 @@ CSVImporter aims to handle validations, column mapping, import
 and reporting.
 
 [![Build
-Status](https://travis-ci.org/BrewhouseTeam/csv-importer.svg)](https://travis-ci.org/BrewhouseTeam/csv-importer)
+Status](https://travis-ci.org/pcreux/csv-importer.svg)](https://travis-ci.org/pcreux/csv-importer)
 [![Code
-Climate](https://codeclimate.com/github/BrewhouseTeam/csv-importer/badges/gpa.svg)](https://codeclimate.com/github/BrewhouseTeam/csv-importer)
+Climate](https://codeclimate.com/github/pcreux/csv-importer/badges/gpa.svg)](https://codeclimate.com/github/pcreux/csv-importer)
 [![Test
-Coverage](https://codeclimate.com/github/BrewhouseTeam/csv-importer/badges/coverage.svg)](https://codeclimate.com/github/BrewhouseTeam/csv-importer/coverage)
+Coverage](https://codeclimate.com/github/pcreux/csv-importer/badges/coverage.svg)](https://codeclimate.com/github/pcreux/csv-importer/coverage)
 [![Gem
 Version](https://badge.fury.io/rb/csv-importer.svg)](http://badge.fury.io/rb/csv-importer)
 
@@ -415,7 +415,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-1. Fork it ( https://github.com/BrewhouseTeam/csv-importer/fork )
+1. Fork it ( https://github.com/pcreux/csv-importer/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
