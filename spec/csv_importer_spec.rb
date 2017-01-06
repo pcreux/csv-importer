@@ -580,5 +580,19 @@ mark@example.com,false,mark,new_last_name"
       import.run!
       expect(import.report.message).to eq "Import completed: 1 created, 1 update skipped"
     end
-  end
+
+    it "doesn't call skip! twice" do
+      csv_content = "email,confirmed,first_name,last_name
+bob@example.com,true,bob,,
+mark@example.com,false,mark,new_last_name"
+      import = ImportUserCSV.new(content: csv_content) do
+        after_build do |user|
+          skip! unless user.persisted?
+        end
+      end
+
+      import.run!
+      expect(import.report.message).to eq "Import completed: 1 updated, 1 create skipped"
+    end
+  end # describe "skipping"
 end
