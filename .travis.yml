@@ -4,3 +4,5 @@ rvm:
 addons:
   code_climate:
     repo_token: 0e005c563813539e6d0cdca9a3e95b3c0f1c79f32284f8eaa93b54c57303d427
+after_success:
+  - bundle exec codeclimate-test-reporter

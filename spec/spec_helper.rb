@@ -1,10 +1,5 @@
-if ENV['CODECLIMATE_REPO_TOKEN']
-  require "codeclimate-test-reporter"
-  CodeClimate::TestReporter.start
-else
-  require "simplecov"
-  SimpleCov.start
-end
+require "simplecov"
+SimpleCov.start
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 
