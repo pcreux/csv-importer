@@ -35,9 +35,9 @@ module CSVImporter
       if content
         content
       elsif file
-        file.read
+        File.read(file.tempfile.to_path, encoding: encoding)
       elsif path
-        File.open(path).read
+        File.read(path, encoding: encoding)
       else
         raise Error, "Please provide content, file, or path"
       end
