@@ -69,8 +69,8 @@ module CSVImporter
 
   # Initialize and return the `Row`s for the current CSV file
   def rows
-    csv.rows.map do |row_array|
-      Row.new(header: header, row_array: row_array, model_klass: config.model,
+    csv.rows.map.with_index do |row_array, line|
+      Row.new(header: header, line: line+1, row_array: row_array, model_klass: config.model,
               identifiers: config.identifiers, after_build_blocks: config.after_build_blocks)
     end
   end
