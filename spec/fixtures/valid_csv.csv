@@ -1,2 +1,2 @@
-email,confirmed,first_name,last_name
-bob@example.com,true,bob,,
+email,confirmed,first_name,last_name,birth_date
+bob@example.com,true,bob,,03/19/05
