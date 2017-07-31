@@ -353,8 +353,8 @@ You can get your hands dirty and fetch the errored rows and the
 associated error message:
 
 ```ruby
-import.report.invalid_rows.map { |row| [row.model.email, row.errors] }
-  # => [ [ "INVALID_EMAIL", { "email" => "is invalid" } ] ]
+import.report.invalid_rows.map { |row| [row.line_number, row.model.email, row.errors] }
+  # => [ [2, "INVALID_EMAIL", { "email" => "is invalid" } ] ]
 ```
 
 We do our best to map the errors back to the original column name. So
