@@ -7,6 +7,7 @@ module CSVImporter
     include Virtus.model
 
     attribute :header, Header
+    attribute :line_number, Integer
     attribute :row_array, Array[String]
     attribute :model_klass
     attribute :identifiers, Array[Symbol]

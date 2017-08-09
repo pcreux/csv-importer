@@ -134,6 +134,17 @@ BOB@example.com,true,bob,,"
         "confirmed_at" => Time.new(2012)
       )
     end
+
+      it "records the correct line number for each row" do
+        csv_content = "email,confirmed,first_name,last_name
+BOB@example.com,true,bob,,"
+        import = ImportUserCSV.new(content: csv_content)
+        import.run!
+
+        expect(import.report.valid_rows.size).to eq(1)
+        expect(import.report.created_rows.size).to eq(1)
+        expect(import.report.created_rows.first.line_number).to eq(2)
+      end
   end
 
   describe "invalid records" do
@@ -162,6 +173,16 @@ BOB@example.com,true,bob,,"
       row = import.report.invalid_rows.first
       expect(row.errors.size).to eq(1)
       expect(row.errors).to eq("first_name" => "can't be blank")
+    end
+
+    it "records the correct line number for each row" do
+      csv_content = "email,confirmed,first_name,last_name
+  bob@example.com,true,,last,"
+      import = ImportUserCSV.new(content: csv_content)
+      import.run!
+
+      expect(import.report.invalid_rows.first.line_number).to eq(2)
+      expect(import.report.failed_to_create_rows.first.line_number).to eq(2)
     end
   end
 
