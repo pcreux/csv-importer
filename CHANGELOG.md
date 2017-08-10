@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2017-08-10
+
+### Added
+
+* Rows are now aware of their line number.
+
+```ruby
+import.report.invalid_rows.map { |row| [row.line_number, row.model.email, row.errors] }
+  # => [ [2, "INVALID_EMAIL", { "email" => "is invalid" } ] ]
+```
+
 ## [0.3.2] - 2017-01-06
 
 ### Fixed
