@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-* Rows are now aware of their line number.
+* Rows are now aware of their line number. [#63][] by [@paulodeleo][]
 
 ```ruby
 import.report.invalid_rows.map { |row| [row.line_number, row.model.email, row.errors] }
@@ -127,7 +127,9 @@ report object instead of raising an exception.
 [#38]: https://github.com/BrewhouseTeam/csv-importer/issues/38
 [#47]: https://github.com/BrewhouseTeam/csv-importer/issues/47
 [#52]: https://github.com/BrewhouseTeam/csv-importer/issues/52
+[#63]: https://github.com/BrewhouseTeam/csv-importer/issues/63
 [@egg-chicken]: https://github.com/egg-chicken
-[@pnomolos]: https://github.com/pnomolos
 [@fxgallego]: https://github.com/fxgallego
+[@paulodeleo]: https://github.com/paulodeleo
+[@pnomolos]: https://github.com/pnomolos
 [@shvetsovdm]: https://github.com/shvetsovdm
