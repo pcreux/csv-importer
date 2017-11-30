@@ -577,6 +577,13 @@ BOB@example.com,true,bob,,"
         after_save do
           saves_count += 1
         end
+
+        after_save do |user, attributes|
+          # representing maybe a realistic OtherResource.find_by(name: 'invalid')
+          if user.email == 'invalid'
+            user.errors.add(:email, "'#{ attributes['email'] }' could not be found")
+          end
+        end
       end
 
       expect {
@@ -584,6 +591,9 @@ BOB@example.com,true,bob,,"
       }.to change { success_array }.from([]).to([true, false])
 
       expect(saves_count).to eq 2
+
+      failed_row = import.report.failed_to_create_rows.first
+      expect(failed_row.model.errors[:email]).to include("'invalid' could not be found")
     end
   end
 
