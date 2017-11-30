@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["pcreux@gmail.com"]
 
   spec.summary       = %q{CSV Import for humans}
-  spec.homepage      = "https://github.com/BrewhouseTeam/csv-importer"
+  spec.homepage      = "https://github.com/pcreux/csv-importer"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
