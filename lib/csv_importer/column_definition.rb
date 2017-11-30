@@ -18,6 +18,9 @@ module CSVImporter
   #   # email will be downcased
   #   column :email, to: ->(email) { email.downcase }
   #
+  #   # column defined with description to show user info about schema
+  #   column :active, description: %q{Can provide "Y", "Yes", "true" or simply "no"}
+  #
   #   # transform `confirmed` to `confirmed_at`
   #   column :confirmed, to: ->(confirmed, model) do
   #     model.confirmed_at = confirmed == "true" ? Time.new(2012) : nil
@@ -30,6 +33,7 @@ module CSVImporter
     attribute :to # Symbol or Proc
     attribute :as # Symbol, String, Regexp, Array
     attribute :required, Boolean
+    attribute :description, String
 
     # The model attribute that this column targets
     def attribute

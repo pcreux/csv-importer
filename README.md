@@ -328,6 +328,32 @@ UserImport.new(file: csv_file) do
 end
 ```
 
+### Provide user info regarding column purpose
+
+You may want to pull the schema for the importer dynamically and list out the
+supported fields along with a description, to help guide users through an import
+process on valid content.
+
+```ruby
+class ImportUserCSV
+  model User
+
+  column :active, to: ->(value) { %w(y yes true active).include?(value.downcase) }, description: %q{Indicate if active using "Y", "yes", "true", "active" or just "no"}
+
+  # optionally use I18n
+  column :active, to: ->(value) {}, description: I18n.t('my.custom.scope.active')
+end
+```
+
+To access this information and potentially display to users before uploading a
+file to import:
+
+```ruby
+ImportUserCSV.config.column_definitions.each do |column|
+  puts "#{ column.name.to_s.titleize } - #{ column.description }"
+end
+```
+
 
 ### Validate the header
 
