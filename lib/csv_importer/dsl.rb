@@ -10,8 +10,9 @@ module CSVImporter
       config.column_definitions << options.merge(name: name)
     end
 
-    def identifier(*identifiers)
-      config.identifiers = identifiers
+    def identifier(*params)
+      identifier = params.first
+      config.identifiers = identifier.is_a?(Proc) ? identifier : params
     end
 
     alias_method :identifiers, :identifier

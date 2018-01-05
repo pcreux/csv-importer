@@ -224,6 +224,14 @@ You can also define a composite identifier:
   identifier :company_id, :employee_id
 ```
 
+Or a Proc:
+
+```ruby
+  # Update records with email if email is present
+  # Update records matching company_id AND employee_id if email is not present
+  identifier ->(user) { user.email.empty? ? [:company_id, :employee_id] : :email }
+```
+
 ### Skip or Abort on error
 
 By default, we skip invalid records and report errors back to the user.

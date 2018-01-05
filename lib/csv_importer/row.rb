@@ -10,7 +10,7 @@ module CSVImporter
     attribute :line_number, Integer
     attribute :row_array, Array[String]
     attribute :model_klass
-    attribute :identifiers, Array[Symbol]
+    attribute :identifiers # Array[Symbol] or Proc
     attribute :after_build_blocks, Array[Proc], default: []
     attribute :skip, Boolean, default: false
 
@@ -89,10 +89,14 @@ module CSVImporter
     end
 
     def find_model
-      return nil if identifiers.empty?
+      return nil unless identifiers
 
       model = build_model
       set_attributes(model)
+
+      identifiers = model_identifiers(model)
+      return nil if identifiers.empty?
+
       query = Hash[
         identifiers.map { |identifier| [ identifier, model.public_send(identifier) ] }
       ]
@@ -105,6 +109,13 @@ module CSVImporter
 
     def skip!
       self.skip = true
+    end
+
+    private
+
+    def model_identifiers(model)
+      return [identifiers.call(model)].flatten if identifiers.is_a?(Proc)
+      identifiers
     end
   end
 end
