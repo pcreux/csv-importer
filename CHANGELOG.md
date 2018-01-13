@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2018-01-13
+
+### Added
+
+* after_save supports block with arity of 2 for access to raw
+  attributes. #68 by @macfanatic.
+
+```ruby
+class Importer
+  model Task
+
+  column :assignee, to: ->(name) { User.active.find_by(name: name) }
+
+  after_save do |task, attributes|
+    if task.errors[:assignee].present? && attributes['Assignee'].present?
+      task.errors.add(:assignee, "'#{ attributes['Assignee'] }' is not part of this project."
+    end
+  end
+end
+```
+
+* support Proc identifiers. #69 by @danielweinmann
+
+```ruby
+class Importer
+  identifier ->(user) { user.email.present? ? :email : [:company_id, :employee_id] }
+end
+```
+
 ## [0.4.0] - 2017-08-10
 
 ### Added
