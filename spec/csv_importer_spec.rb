@@ -359,6 +359,19 @@ new-mark@example.com,false,mark,moo"
       expect(import.report.message).to eq "Import completed: 1 created, 1 updated"
     end
 
+    it "handles proc identifiers" do
+      csv_content = "email,confirmed,first_name,last_name
+mark@example.com,false,mark,lee
+mark@example.com,false,mark,
+updated-mark@example.com,false,mark,moo"
+      import = ImportUserCSV.new(content: csv_content) do
+        identifiers ->(user) { user.l_name.empty? ? :email : %i[f_name l_name] }
+      end
+
+      import.run!
+
+      expect(import.report.message).to eq "Import completed: 1 created, 2 updated"
+    end
   end # describe "find or create"
 
   it "strips cells" do
