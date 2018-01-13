@@ -63,7 +63,16 @@ module CSVImporter
           end
 
           add_to_report(row, tags)
-          after_save_blocks.each { |block| block.call(row.model) }
+
+          after_save_blocks.each do |block|
+            case block.arity
+            when 0 then block.call
+            when 1 then block.call(row.model)
+            when 2 then block.call(row.model, row.csv_attributes)
+            else
+              raise ArgumentError, "after_save block of arity #{ block.arity } is not supported"
+            end
+          end
         end
       end
     end
