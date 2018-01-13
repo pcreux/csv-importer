@@ -89,7 +89,7 @@ module CSVImporter
     end
 
     def find_model
-      return nil unless identifiers
+      return nil if identifiers.nil?
 
       model = build_model
       set_attributes(model)
@@ -114,8 +114,11 @@ module CSVImporter
     private
 
     def model_identifiers(model)
-      return [identifiers.call(model)].flatten if identifiers.is_a?(Proc)
-      identifiers
+      if identifiers.is_a?(Proc)
+        [identifiers.call(model)].flatten
+      else
+        identifiers
+      end
     end
   end
 end

@@ -11,8 +11,7 @@ module CSVImporter
     end
 
     def identifier(*params)
-      identifier = params.first
-      config.identifiers = identifier.is_a?(Proc) ? identifier : params
+      config.identifiers = params.first.is_a?(Proc) ? params.first : params
     end
 
     alias_method :identifiers, :identifier
