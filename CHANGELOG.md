@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 * after_save supports block with arity of 2 for access to raw
-  attributes. #68 by @macfanatic.
+  attributes. [#68][] by [@macfanatic][].
 
 ```ruby
 class Importer
@@ -23,7 +23,7 @@ class Importer
 end
 ```
 
-* support Proc identifiers. #69 by @danielweinmann
+* support Proc identifiers. [#69][] by [@danielweinmann][]
 
 ```ruby
 class Importer
@@ -157,8 +157,12 @@ report object instead of raising an exception.
 [#47]: https://github.com/BrewhouseTeam/csv-importer/issues/47
 [#52]: https://github.com/BrewhouseTeam/csv-importer/issues/52
 [#63]: https://github.com/BrewhouseTeam/csv-importer/issues/63
+[#68]: https://github.com/BrewhouseTeam/csv-importer/issues/68
+[#69]: https://github.com/BrewhouseTeam/csv-importer/issues/69
+[@danielweinmann]: https://github.com/danielweinmann
 [@egg-chicken]: https://github.com/egg-chicken
 [@fxgallego]: https://github.com/fxgallego
+[@macfanatic]: https://github.com/macfanatic
 [@paulodeleo]: https://github.com/paulodeleo
 [@pnomolos]: https://github.com/pnomolos
 [@shvetsovdm]: https://github.com/shvetsovdm
