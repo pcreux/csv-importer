@@ -336,6 +336,35 @@ UserImport.new(file: csv_file) do
 end
 ```
 
+### Store metadata on the column description
+
+You may find yourself wanting to store arbitrary metadata about a column.
+
+For example, you may want to pull the schema for the importer dynamically and list out the
+supported fields along with a description, to help guide users through an import
+process on valid content.
+
+This can be accomplished using the metadata Hash.
+
+```ruby
+class ImportUserCSV
+  model User
+
+  column :active, to: ->(value) { %w(y yes true active).include?(value.downcase) }, meta: { description: %q{Indicate if active using "Y", "yes", "true", "active" or just "no"} }
+
+  # optionally use I18n
+  column :active, to: ->(value) {}, meta: { description: I18n.t('my.custom.scope.active') }
+end
+```
+
+To access this information and potentially display to users before uploading a
+file to import:
+
+```ruby
+ImportUserCSV.config.column_definitions.each do |column|
+  puts "#{ column.name.to_s.titleize } - #{ column.metadata[:description] }"
+end
+```
 
 ### Validate the header
 

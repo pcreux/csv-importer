@@ -2,6 +2,24 @@ require "spec_helper"
 
 module CSVImporter
   describe ColumnDefinition do
+    describe '.meta' do
+      it 'defaults to an empty Hash' do
+        expect(subject.meta).to eq(Hash.new)
+      end
+
+      it 'does not transform values' do
+        subject.meta[:key] = 19.0
+
+        expect(subject.meta[:key]).to eq(19.0)
+      end
+
+      it 'does not transform keys' do
+        subject.meta['key'] = 19.0
+
+        expect(subject.meta[:key]).to eq(nil)
+      end
+    end
+
     describe "#match?" do
 
       matcher :match do |name|
