@@ -2,6 +2,7 @@ require "csv"
 require "virtus"
 
 require "csv_importer/version"
+require "csv_importer/converter"
 require "csv_importer/csv_reader"
 require "csv_importer/column_definition"
 require "csv_importer/column"

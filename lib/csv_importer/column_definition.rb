@@ -23,11 +23,15 @@ module CSVImporter
   #     model.confirmed_at = confirmed == "true" ? Time.new(2012) : nil
   #   end
   #
+  #   # reuse date parsing logic across importers
+  #   # DateImporterParser = ->(date) { complex logic... }
+  #   # column :birth_date, to: DateImporterParser
+  #
   class ColumnDefinition
     include Virtus.model
 
     attribute :name, Symbol
-    attribute :to # Symbol or Proc
+    attribute :to # Symbol, Proc, or Converter
     attribute :as # Symbol, String, Regexp, Array
     attribute :required, Boolean
 

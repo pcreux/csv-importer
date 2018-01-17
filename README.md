@@ -49,6 +49,7 @@ class ImportUserCSV
   column :first_name, as: [ /first.?name/i, /pr(é|e)nom/i ]
   column :last_name,  as: [ /last.?name/i, "nom" ]
   column :published,  to: ->(published, user) { user.published_at = published ? Time.now : nil }
+  column :birth_date,  to: DateConverter # can define converter instead of Proc for more complex, reusable logic
 
   identifier :email # will update_or_create via :email
 
@@ -197,6 +198,91 @@ import.report.status # => :invalid_header
 import.report.message # => "The following columns are required: 'email'"
 ```
 
+### Converters
+When defining a column you can pass a simple Proc for quick manipulation, or
+use a Converter.  A Converter is a class that can parse the raw CSV value and
+simply return, or additionally perform manipulation on the model object.
+
+A classic example is offering more flexible and robust date parsing.
+
+```ruby
+class ImportUserCSV
+  include CSVImporter
+
+  model User
+
+  column :birth_date, to: DateConverter
+  column :renewal_date, to: DateConverter
+end
+```
+
+We can define a simple parser to return a value using:
+
+```ruby
+class DateConvert < CSVImporter::Converter
+  def parse(date)
+    begin
+      Date.strptime(date, '%m/%d/%y')
+    rescue
+    end
+  end
+end
+```
+
+However, we might want to do some manipulation on the model instance as well:
+
+```ruby
+class DateConvert < CSVImporter::Converter
+  def parse(date)
+    begin
+      Date.strptime(date, '%m/%d/%y')
+    rescue
+    end
+  end
+
+  def convert(csv_value, model, attribute_name)
+    value = parse(csv_value)
+
+    # maybe we skip importing any users that would have renewed in the past?
+    skip! if attribute_name == :renewal_date && value.past?
+
+    assign(model, attribute_name, value)
+  end
+end
+```
+
+You could extend the date parsing to recognized multiple formats even:
+
+```ruby
+class DateConvert < CSVImporter::Converter  
+  FORMATS = [
+    '%m/%d/%y',
+    '%m/%d/%Y',
+    '%m-%d-%Y'
+  ].freeze
+
+  def parse(date)
+    @date = date
+
+    FORMATS.each do |format|
+      result = parse_date(format)
+
+      return result if result.present?
+    end
+
+    nil # otherwise we return the FORMATS array
+  end
+
+  private
+
+  def parse_date(format)
+    begin
+      Date.strptime(@date, format)
+    rescue
+    end
+  end
+end
+```
 
 ### Update or Create
 

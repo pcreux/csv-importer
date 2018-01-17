@@ -14,6 +14,7 @@ describe CSVImporter do
     attribute :l_name
     attribute :confirmed_at
     attribute :created_by_user_id
+    attribute :birth_date
 
     validates_presence_of :email
     validates_format_of :email, with: /[^@]+@[^@]/ # contains one @ symbol
@@ -57,6 +58,15 @@ describe CSVImporter do
     end
   end
 
+  class DateConverter < CSVImporter::Converter
+    def parse(csv_value)
+      begin
+        Date.strptime(csv_value, '%m/%d/%y')
+      rescue
+      end
+    end
+  end
+
   class ImportUserCSV
     include CSVImporter
 
@@ -65,6 +75,7 @@ describe CSVImporter do
     column :email, required: true, as: /email/i, to: ->(email) { email.downcase }
     column :f_name, as: :first_name, required: true
     column :last_name,  to: :l_name
+    column :birth_date, to: DateConverter
     column :confirmed,  to: ->(confirmed, model) do
       model.confirmed_at = confirmed == "true" ? Time.new(2012) : nil
     end
@@ -101,8 +112,8 @@ describe CSVImporter do
 
   describe "happy path" do
     it 'imports' do
-      csv_content = "email,confirmed,first_name,last_name
-BOB@example.com,true,bob,,"
+      csv_content = "email,confirmed,first_name,last_name,birth_date
+BOB@example.com,true,bob,,03/19/05"
 
       import = ImportUserCSV.new(content: csv_content)
       expect(import.rows.size).to eq(1)
@@ -114,7 +125,8 @@ BOB@example.com,true,bob,,"
           "email" => "BOB@example.com",
           "first_name" => "bob",
           "last_name" => "",
-          "confirmed" => "true"
+          "confirmed" => "true",
+          "birth_date" => "03/19/05"
         }
       )
 
@@ -131,7 +143,8 @@ BOB@example.com,true,bob,,"
         "email" => "bob@example.com", # was downcased!
         "f_name" => "bob",
         "l_name" => "",
-        "confirmed_at" => Time.new(2012)
+        "confirmed_at" => Time.new(2012),
+        "birth_date" => Date.new(2005, 3, 19)
       )
     end
 
@@ -222,7 +235,7 @@ bob@example.com,true,,last,"
       import = ImportUserCSV.new(content: csv_content)
 
       expect(import.header.missing_required_columns).to be_empty
-      expect(import.header.missing_columns).to eq(["last_name", "confirmed"])
+      expect(import.header.missing_columns).to eq(["last_name", "birth_date", "confirmed"])
     end
   end
 
@@ -238,8 +251,8 @@ bob@example.com,true,,last,"
 
   describe "find or create" do
     it "finds or create via identifier" do
-      csv_content = "email,confirmed,first_name,last_name
-bob@example.com,true,bob,,
+      csv_content = "email,confirmed,first_name,last_name,birth_date
+bob@example.com,true,bob,,03/19/05
 mark@example.com,false,mark,new_last_name"
       import = ImportUserCSV.new(content: csv_content)
 
@@ -255,7 +268,8 @@ mark@example.com,false,mark,new_last_name"
         email: "bob@example.com",
         f_name: "bob",
         l_name: "",
-        confirmed_at: Time.new(2012)
+        confirmed_at: Time.new(2012),
+        birth_date: Date.new(2005, 3, 19)
       )
 
       model = import.report.updated_rows.first.model
