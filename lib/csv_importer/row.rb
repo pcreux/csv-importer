@@ -52,7 +52,11 @@ module CSVImporter
 
     # Set the attribute using the column_definition and the csv_value
     def set_attribute(model, column_definition, csv_value)
-      deprecated_attribute_setter(model, column_definition, csv_value)
+      if set_attribute_via_to?(column_definition)
+        set_attribute_via_to(model, column_definition, csv_value)
+      else
+        fallback_assignment(model, column_definition, csv_value)
+      end
 
       model
     end
@@ -99,21 +103,21 @@ module CSVImporter
 
     private
 
-    def deprecated_attribute_setter(model, column_definition, csv_value)
-      if column_definition.to && column_definition.to.is_a?(Proc)
-        to_proc = column_definition.to
+    def set_attribute_via_to(model, column_definition, csv_value)
+      to_proc = column_definition.to
 
-        case to_proc.arity
-        when 1 # to: ->(email) { email.downcase }
-          assign_attribute(model, column_definition.name, to_proc.call(csv_value))
-        when 2 # to: ->(published, post) { post.published_at = Time.now if published == "true" }
-          to_proc.call(csv_value, model)
-        else
-          raise ArgumentError, "`to` proc can only have 1 or 2 arguments"
-        end
+      case to_proc.arity
+      when 1 # to: ->(email) { email.downcase }
+        assign_attribute(model, column_definition.name, to_proc.call(csv_value))
+      when 2 # to: ->(published, post) { post.published_at = Time.now if published == "true" }
+        to_proc.call(csv_value, model)
       else
-        fallback_assignment(model, column_definition, csv_value)
+        raise ArgumentError, "`to` proc can only have 1 or 2 arguments"
       end
+    end
+
+    def set_attribute_via_to?(column_definition)
+      column_definition.to && column_definition.to.is_a?(Proc)
     end
 
     def fallback_assignment(model, column_definition, csv_value)
