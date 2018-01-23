@@ -49,6 +49,7 @@ class ImportUserCSV
   column :first_name, as: [ /first.?name/i, /pr(é|e)nom/i ]
   column :last_name,  as: [ /last.?name/i, "nom" ]
   column :published,  to: ->(published, user) { user.published_at = published ? Time.now : nil }
+  column :birth_date, parser: DateParser # can define parser instead of Proc for more complex, reusable logic
 
   identifier :email # will update_or_create via :email
 
@@ -197,6 +198,70 @@ import.report.status # => :invalid_header
 import.report.message # => "The following columns are required: 'email'"
 ```
 
+### Parsers
+When defining a column you can pass a simple Proc for quick parsing, or
+use a formal Parser.  A Parser is a class or Proc that can parse the raw CSV value and
+return a parsed or converted value.
+
+A classic example is offering more flexible and robust date parsing.
+
+```ruby
+class ImportUserCSV
+  include CSVImporter
+
+  model User
+
+  column :birth_date, parser: DateParser
+  column :renewal_date, parser: DateParser
+  column :next_renewal_at, parser: ->(value) { Time.at(value.to_i) }
+end
+```
+
+We can define a simple parser to return a value using:
+
+```ruby
+class DateParser
+  def self.call(date)
+    begin
+      Date.strptime(date, '%m/%d/%y')
+    rescue
+    end
+  end
+end
+```
+
+You could extend the date parsing to recognized multiple formats even:
+
+```ruby
+class DateParser
+  FORMATS = [
+    '%m/%d/%y',
+    '%m/%d/%Y',
+    '%m-%d-%Y'
+  ].freeze
+
+  def self.call(date)
+    @date = date
+
+    FORMATS.each do |format|
+      result = parse_date(format)
+
+      return result if result.present?
+    end
+
+    nil # otherwise we return the FORMATS array
+  end
+
+  private
+
+  def parse_date(format)
+    begin
+      Date.strptime(@date, format)
+    rescue
+    end
+  end
+end
+```
 
 ### Update or Create
 
