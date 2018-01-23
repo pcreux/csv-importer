@@ -105,7 +105,7 @@ module CSVImporter
 
         case to_proc.arity
         when 1 # to: ->(email) { email.downcase }
-          model.public_send("#{column_definition.name}=", to_proc.call(csv_value))
+          assign_attribute(model, column_definition.name, to_proc.call(csv_value))
         when 2 # to: ->(published, post) { post.published_at = Time.now if published == "true" }
           to_proc.call(csv_value, model)
         else
@@ -117,8 +117,11 @@ module CSVImporter
     end
 
     def fallback_assignment(model, column_definition, csv_value)
-      attribute = column_definition.attribute
-      model.public_send("#{attribute}=", csv_value)
+      assign_attribute(model, column_definition.attribute, csv_value)
+    end
+
+    def assign_attribute(model, attribute_name, value)
+      model.public_send("#{ attribute_name }=", value)
     end
 
     def model_identifiers(model)
