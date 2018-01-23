@@ -52,21 +52,7 @@ module CSVImporter
 
     # Set the attribute using the column_definition and the csv_value
     def set_attribute(model, column_definition, csv_value)
-      if column_definition.to && column_definition.to.is_a?(Proc)
-        to_proc = column_definition.to
-
-        case to_proc.arity
-        when 1 # to: ->(email) { email.downcase }
-          model.public_send("#{column_definition.name}=", to_proc.call(csv_value))
-        when 2 # to: ->(published, post) { post.published_at = Time.now if published == "true" }
-          to_proc.call(csv_value, model)
-        else
-          raise ArgumentError, "`to` proc can only have 1 or 2 arguments"
-        end
-      else
-        attribute = column_definition.attribute
-        model.public_send("#{attribute}=", csv_value)
-      end
+      deprecated_attribute_setter(model, column_definition, csv_value)
 
       model
     end
@@ -112,6 +98,24 @@ module CSVImporter
     end
 
     private
+
+    def deprecated_attribute_setter(model, column_definition, csv_value)
+      if column_definition.to && column_definition.to.is_a?(Proc)
+        to_proc = column_definition.to
+
+        case to_proc.arity
+        when 1 # to: ->(email) { email.downcase }
+          model.public_send("#{column_definition.name}=", to_proc.call(csv_value))
+        when 2 # to: ->(published, post) { post.published_at = Time.now if published == "true" }
+          to_proc.call(csv_value, model)
+        else
+          raise ArgumentError, "`to` proc can only have 1 or 2 arguments"
+        end
+      else
+        attribute = column_definition.attribute
+        model.public_send("#{attribute}=", csv_value)
+      end
+    end
 
     def model_identifiers(model)
       if identifiers.is_a?(Proc)
