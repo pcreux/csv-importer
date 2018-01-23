@@ -29,6 +29,7 @@ module CSVImporter
     attribute :name, Symbol
     attribute :to # Symbol or Proc
     attribute :as # Symbol, String, Regexp, Array
+    attribute :parser # Object responding to #call (Proc or Class)
     attribute :required, Boolean
 
     # The model attribute that this column targets

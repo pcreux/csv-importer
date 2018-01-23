@@ -52,7 +52,9 @@ module CSVImporter
 
     # Set the attribute using the column_definition and the csv_value
     def set_attribute(model, column_definition, csv_value)
-      if set_attribute_via_to?(column_definition)
+      if set_attribute_via_parser?(column_definition)
+        set_attribute_via_parser(model, column_definition, csv_value)
+      elsif set_attribute_via_to?(column_definition)
         set_attribute_via_to(model, column_definition, csv_value)
       else
         fallback_assignment(model, column_definition, csv_value)
@@ -116,8 +118,20 @@ module CSVImporter
       end
     end
 
+    def set_attribute_via_parser(model, column_definition, csv_value)
+      converted_value = column_definition.parser.call(csv_value)
+
+      assign_attribute(model, column_definition.name, converted_value)
+    end
+
     def set_attribute_via_to?(column_definition)
       column_definition.to && column_definition.to.is_a?(Proc)
+    end
+
+    def set_attribute_via_parser?(column_definition)
+      return false if column_definition.parser.nil?
+
+      column_definition.parser.respond_to?(:call)
     end
 
     def fallback_assignment(model, column_definition, csv_value)
