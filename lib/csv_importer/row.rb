@@ -112,9 +112,13 @@ module CSVImporter
           raise ArgumentError, "`to` proc can only have 1 or 2 arguments"
         end
       else
-        attribute = column_definition.attribute
-        model.public_send("#{attribute}=", csv_value)
+        fallback_assignment(model, column_definition, csv_value)
       end
+    end
+
+    def fallback_assignment(model, column_definition, csv_value)
+      attribute = column_definition.attribute
+      model.public_send("#{attribute}=", csv_value)
     end
 
     def model_identifiers(model)
