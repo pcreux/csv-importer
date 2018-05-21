@@ -14,6 +14,7 @@ describe CSVImporter do
     attribute :l_name
     attribute :confirmed_at
     attribute :created_by_user_id
+    attribute :custom_fields, Hash
 
     validates_presence_of :email
     validates_format_of :email, with: /[^@]+@[^@]/ # contains one @ symbol
@@ -68,6 +69,9 @@ describe CSVImporter do
     column :confirmed,  to: ->(confirmed, model) do
       model.confirmed_at = confirmed == "true" ? Time.new(2012) : nil
     end
+    column :extra, as: /extra/i, to: ->(value, model, column) do
+      model.custom_fields[column.name] = value
+    end
 
     identifier :email # will find_or_update via
 
@@ -101,8 +105,8 @@ describe CSVImporter do
 
   describe "happy path" do
     it 'imports' do
-      csv_content = "email,confirmed,first_name,last_name
-BOB@example.com,true,bob,,"
+      csv_content = "email,confirmed,first_name,last_name,extra_1,extra_2
+BOB@example.com,true,bob,,meta1,meta2"
 
       import = ImportUserCSV.new(content: csv_content)
       expect(import.rows.size).to eq(1)
@@ -114,7 +118,9 @@ BOB@example.com,true,bob,,"
           "email" => "BOB@example.com",
           "first_name" => "bob",
           "last_name" => "",
-          "confirmed" => "true"
+          "confirmed" => "true",
+          "extra_1" => "meta1",
+          "extra_2" => "meta2",
         }
       )
 
@@ -131,7 +137,11 @@ BOB@example.com,true,bob,,"
         "email" => "bob@example.com", # was downcased!
         "f_name" => "bob",
         "l_name" => "",
-        "confirmed_at" => Time.new(2012)
+        "confirmed_at" => Time.new(2012),
+        "custom_fields" => {
+          "extra_1" => "meta1",
+          "extra_2" => "meta2"
+        }
       )
     end
 
@@ -222,7 +232,8 @@ bob@example.com,true,,last,"
       import = ImportUserCSV.new(content: csv_content)
 
       expect(import.header.missing_required_columns).to be_empty
-      expect(import.header.missing_columns).to eq(["last_name", "confirmed"])
+      expect(import.header.missing_columns)
+        .to eq(["last_name", "confirmed", "extra"])
     end
   end
 
