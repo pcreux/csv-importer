@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] - 2018-05-22
+
+### Added
+
+* We now pass the `column` object as the third parameter of the `column`
+  block for advanced usage. Example:
+
+```ruby
+  column :extra, as: [/extra/], to: ->(value, user, column) do
+    attribute = column.name.sub(/^extra /, '')
+    user[attribute] = value
+  end
+```
+
 ## [0.5.0] - 2018-01-13
 
 ### Added
