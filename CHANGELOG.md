@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 * We now pass the `column` object as the third parameter of the `column`
-  block for advanced usage. Example:
+  block for advanced usage. [#73][] by [@stas][].
 
 ```ruby
   column :extra, as: [/extra/], to: ->(value, user, column) do
@@ -173,6 +173,7 @@ report object instead of raising an exception.
 [#63]: https://github.com/BrewhouseTeam/csv-importer/issues/63
 [#68]: https://github.com/BrewhouseTeam/csv-importer/issues/68
 [#69]: https://github.com/BrewhouseTeam/csv-importer/issues/69
+[#73]: https://github.com/BrewhouseTeam/csv-importer/issues/73
 [@danielweinmann]: https://github.com/danielweinmann
 [@egg-chicken]: https://github.com/egg-chicken
 [@fxgallego]: https://github.com/fxgallego
@@ -180,3 +181,4 @@ report object instead of raising an exception.
 [@paulodeleo]: https://github.com/paulodeleo
 [@pnomolos]: https://github.com/pnomolos
 [@shvetsovdm]: https://github.com/shvetsovdm
+[@stas]: https://github.com/stas
