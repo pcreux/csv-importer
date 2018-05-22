@@ -178,6 +178,15 @@ If you need to do more advanced stuff, you've got access to the model:
   column :email, as: [/e.?mail/i, "courriel"], to: ->(email, user) { user.email = email.downcase; model.super_user! if email[/@brewhouse.io\z/] }
 ```
 
+Like very advanced stuff? We grant you access to the [`column`](https://github.com/pcreux/csv-importer/blob/master/lib/csv_importer/column.rb) object itself which contains the column name – quite handy if you want to support arbitrary columns.
+
+```ruby
+  column :extra, as: [/extra/], to: ->(value, user, column) do
+    attribute = column.name.sub(/^extra /, '')
+    user[attribute] = value
+  end
+```
+
 Now, what if the user does not provide the email column? It's not worth
 running the import, we should just reject the CSV file right away.
 That's easy:
