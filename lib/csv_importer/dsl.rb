@@ -27,5 +27,9 @@ module CSVImporter
     def after_save(&block)
       config.after_save(block)
     end
+
+    def after_read(&block)
+      config.after_read(block)
+    end
   end
 end

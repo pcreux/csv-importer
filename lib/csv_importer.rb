@@ -69,10 +69,17 @@ module CSVImporter
 
   # Initialize and return the `Row`s for the current CSV file
   def rows
+    # Run the after_read callback first
+    config.after_read_blocks.each { |block| instance_exec(csv, &block) }
+
     csv.rows.map.with_index(2) do |row_array, line_number|
       Row.new(header: header, line_number: line_number, row_array: row_array, model_klass: config.model,
               identifiers: config.identifiers, after_build_blocks: config.after_build_blocks)
     end
+  end
+
+  def add_row(args)
+    csv.add_row(args)
   end
 
   def valid_header?
