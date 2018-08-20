@@ -19,6 +19,20 @@ module CSVImporter
       end
     end
 
+    def add_row(args)
+      cells = Array.new(header.size, "")
+      args.stringify_keys!
+
+      args.each do |h, val|
+        if header.include?(h)
+          cells.insert(header.index(h), val)
+        end
+      end
+
+      @csv_rows = sanitize_cells(@csv_rows << cells)
+      @rows = csv_rows[1..-1]
+    end
+
     # Returns the header as an Array of Strings
     def header
       @header ||= csv_rows.first
@@ -27,6 +41,22 @@ module CSVImporter
     # Returns the rows as an Array of Arrays of Strings
     def rows
       @rows ||= csv_rows[1..-1]
+    end
+
+    # Gets the value for a specific row array at the header_string column
+    def get_from_row_array(row_array, header_string)
+      idx = header.index(header_string)
+      if row_array.size >= idx
+        row_array[idx]
+      end
+    end
+
+    # Sets the value for a specific row array at the header_string column
+    def set_in_row_array(row_array, header_string, val)
+      idx = header.index(header_string)
+      if row_array.size >= idx
+        row_array[idx] = val
+      end
     end
 
     private

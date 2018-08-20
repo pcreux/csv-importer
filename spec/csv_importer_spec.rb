@@ -99,6 +99,39 @@ describe CSVImporter do
     end
   end
 
+  class ImportUserCommaDelmitedFirstNameCSV
+    include CSVImporter
+
+    model User
+
+    column :email, required: true
+    column :f_name, as: :first_name, required: true
+    column :last_name,  to: :l_name
+    column :confirmed,  to: ->(confirmed, model) do
+      model.confirmed_at = confirmed == "true" ? Time.new(2012) : nil
+    end
+
+    identifier :email # will find_or_update via
+
+    when_invalid :skip # or :abort
+
+    after_read do |csv|
+      csv.rows.each do |row_array|
+        # Many first_names ','-delimited means
+        # create a new user with that name
+        first_names = csv.get_from_row_array(row_array, "first_name").split(',')
+        csv.set_in_row_array(row_array, "first_name", first_names.shift)
+        first_names.each do |fn|
+          add_row(
+              email: "#{fn}@example.com",
+              first_name: fn.strip,
+              last_name: csv.get_from_row_array(row_array, "last_name")
+            )
+        end
+      end
+    end
+  end
+
   before do
     User.reset_store!
   end
@@ -506,6 +539,144 @@ bob@example.com,false,bob,,|
 
     expect(import).to be_success
     expect(import.message).to eq "Import completed: 1 created"
+  end
+
+  describe ".add_row" do
+    it "adds a row to the CSVReader" do
+      csv_content = "email,confirmed,first_name,last_name
+      BOB@example.com,true,bob,,"
+      add_row_content =
+        {
+          email: "jim@example.com",
+          confirmed: "true",
+          first_name: "jim"
+        }
+
+      importer = ImportUserCSV.new(content: csv_content)
+      importer.add_row(add_row_content)
+      importer.run!
+
+      expect(User.store.map(&:email)).to include "jim@example.com"
+    end
+
+    it "Ignores a nonexistent header in the new row" do
+      csv_content = "email,confirmed,first_name,last_name
+      BOB@example.com,true,bob,,"
+      add_row_content =
+        {
+          email: "jim@example.com",
+          confirmed: "false",
+          first_name: "jim",
+          nickname: "jimbo",
+        }
+
+      importer = ImportUserCSV.new(content: csv_content)
+      importer.add_row(add_row_content)
+      importer.run!
+
+      expect(User.store.map(&:email)).to include "jim@example.com"
+    end
+
+    it "creates rows at runtime" do
+      csv_content = 'email,confirmed,first_name,last_name
+      bob@example.com,true,"bob, jim",jones,'
+      import = ImportUserCommaDelmitedFirstNameCSV.new(content: csv_content)
+      import.run!
+
+      expect(import.report.message).to eq "Import completed: 2 created"
+
+      model = import.report.created_rows.first.model
+      expect(model).to be_persisted
+      expect(model).to have_attributes(
+        email: "bob@example.com",
+        f_name: "bob",
+        l_name: "jones"
+      )
+
+      model = import.report.created_rows[1].model
+      expect(model).to be_persisted
+      expect(model).to have_attributes(
+        email: "jim@example.com",
+        f_name: "jim",
+        l_name: "jones"
+      )
+    end
+  end
+
+  describe ".after_read" do
+
+    it "overwrites attributes" do
+      csv_content = 'email,confirmed,first_name,last_name
+BOB@example.com,true,"bob, jim",,'
+
+      # This importer downcases emails after build
+      ImportUserCommaDelmitedFirstNameCSV.new(content: csv_content).run!
+
+      expect(User.store.map(&:f_name)).to include "bob"
+    end
+
+    it "overwrites attributes at runtime" do
+      csv_content = "email,confirmed,first_name,last_name
+  bob@example.com,true,bob,,"
+      add_row_content =
+        {
+          email: "adam@example.com",
+          first_name: "adam",
+          last_name: "w"
+        }
+
+      import = ImportUserCommaDelmitedFirstNameCSV.new(content: csv_content) do
+        after_read do |csv|
+          csv.add_row(add_row_content)
+        end
+      end
+
+      import.run!
+
+      model = User.find_by(email: "adam@example.com")
+
+      expect(model.f_name).to eq("adam")
+      expect(model.l_name).to eq("w")
+    end
+
+    it "supports multiple blocks to be ran" do
+      csv_content = "email,confirmed,first_name,last_name
+  BOB@example.com,true,bob,,"
+      add_row_content1 =
+      {
+        email: "test1@example.com",
+        first_name: "test1",
+        last_name: "w1"
+      }
+      add_row_content2 =
+      {
+        email: "test2@example.com",
+        first_name: "test2",
+        last_name: "w2"
+      }
+
+      import = ImportUserCommaDelmitedFirstNameCSV.new(content: csv_content) do
+        after_read do |csv|
+          csv.add_row(add_row_content1)
+        end
+
+        after_read do |csv|
+          csv.add_row(add_row_content2)
+        end
+      end
+
+      import.run!
+
+      expect(User.store.map(&:email)).to include "test1@example.com"
+
+      model = User.find_by(email: "test1@example.com")
+      expect(model.f_name).to eq("test1")
+
+      expect(User.store.map(&:email)).to include "test2@example.com"
+
+      model = User.find_by(email: "test2@example.com")
+      expect(model.f_name).to eq("test2")
+    end
   end
 
   describe ".after_build" do
