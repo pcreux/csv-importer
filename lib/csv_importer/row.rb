@@ -63,7 +63,7 @@ module CSVImporter
         when 3 # to: ->(field_value, post, column) { post.hash_field[column.name] = field_value }
           to_proc.call(csv_value, model, column)
         else
-          raise ArgumentError, "`to` proc can only have 1 or 2 arguments"
+          raise ArgumentError, "`to` proc can only have 1, 2 or 3 arguments"
         end
       else
         attribute = column_definition.attribute
