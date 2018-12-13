@@ -40,6 +40,10 @@ module CSVImporter
     def abort_when_invalid?
       when_invalid == :abort
     end
+    
+    def without_changes?(row)
+      row.model.persisted? && !row.model.changed?
+    end 
 
     def persist_rows!
       transaction do
@@ -52,7 +56,7 @@ module CSVImporter
             tags << :create
           end
 
-          if row.skip?
+          if row.skip? || without_changes?(row)
             tags << :skip
           else
             if row.model.save

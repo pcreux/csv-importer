@@ -5,8 +5,9 @@ require 'set'
 describe CSVImporter do
   # Mimics an active record model
   class User
-    include Virtus.model
-    include ActiveModel::Model
+    include ActiveModel::Attributes
+    include ActiveModel::Validations
+    include ActiveModel::Dirty
 
     attribute :id
     attribute :email
@@ -14,7 +15,7 @@ describe CSVImporter do
     attribute :l_name
     attribute :confirmed_at
     attribute :created_by_user_id
-    attribute :custom_fields, Hash
+    attribute :custom_fields, default: -> { Hash.new }
 
     validates_presence_of :email
     validates_format_of :email, with: /[^@]+@[^@]/ # contains one @ symbol
@@ -25,30 +26,34 @@ describe CSVImporter do
     end
 
     def persisted?
-      !!id
+      !!self.id
     end
 
     def save
       return false unless valid?
 
       unless persisted?
-        @id = rand(100)
+        self.id = rand(100)
         self.class.store << self
       end
 
+      changes_applied
+      
       true
     end
 
     def self.find_by(attributes)
-      store.find { |u| attributes.all? { |k, v| u.attributes[k] == v } }
+      store.find { |u| attributes.all? { |k, v| u.public_send(k) == v } }
     end
 
     def self.reset_store!
       @store = Set.new
 
-      User.new(
-        email: "mark@example.com", f_name: "mark", l_name: "lee", confirmed_at: Time.new(2012)
-      ).save
+      user = User.new
+      { email: "mark@example.com", f_name: "mark", l_name: "lee", confirmed_at: Time.new(2012) }.each do |k,v|
+        user.public_send("#{k}=",v)
+      end
+      user.save
 
       @store
     end
@@ -633,7 +638,19 @@ mark@example.com,false,mark,new_last_name"
       end
 
       import.run!
+      expect(import.report.valid_rows.size).to eq(1)
       expect(import.report.message).to eq "Import completed: 1 created, 1 update skipped"
+    end
+    
+    it "if no changes detected" do
+      csv_content = "email,confirmed,first_name,last_name
+mark@example.com,true,mark,lee"
+      import = ImportUserCSV.new(content: csv_content)
+
+      import.run!
+      
+      expect(import.report.valid_rows.size).to eq(0)
+      expect(import.report.message).to eq "Import completed: 1 update skipped"
     end
 
     it "doesn't call skip! twice" do
