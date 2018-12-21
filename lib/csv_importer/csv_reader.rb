@@ -9,11 +9,12 @@ module CSVImporter
     attribute :path, String
     attribute :quote_char, String, default: '"'
     attribute :encoding, String, default: 'UTF-8:UTF-8'
+    attribute :col_sep, String
 
     def csv_rows
       @csv_rows ||= begin
         sane_content = sanitize_content(read_content)
-        separator = detect_separator(sane_content)
+        separator = col_sep || detect_separator(sane_content)
         cells = CSV.parse(sane_content, col_sep: separator, quote_char: quote_char, skip_blanks: true, encoding: encoding)
         sanitize_cells(cells)
       end
