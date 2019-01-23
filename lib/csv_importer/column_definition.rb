@@ -29,7 +29,7 @@ module CSVImporter
     attribute :name, Symbol
     attribute :to # Symbol or Proc
     attribute :as # Symbol, String, Regexp, Array
-    attribute :required, Boolean
+    attribute :required, Virtus::Attribute::Boolean
 
     # The model attribute that this column targets
     def attribute
