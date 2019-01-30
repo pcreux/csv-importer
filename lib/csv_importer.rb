@@ -85,6 +85,9 @@ module CSVImporter
     end
 
     header.valid?
+  rescue CSV::MalformedCSVError => e
+    @report = Report.new(status: :invalid_csv_file, parser_error: e.message)
+    false
   end
 
   # Run the import. Return a Report.
