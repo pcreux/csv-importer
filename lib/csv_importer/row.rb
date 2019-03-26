@@ -21,7 +21,7 @@ module CSVImporter
 
         set_attributes(model)
 
-        after_build_blocks.each { |block| instance_exec(model, &block) }
+        after_build_blocks.each { |block| instance_exec(model, line_number, &block) }
         model
       end
     end
