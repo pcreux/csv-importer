@@ -224,7 +224,7 @@ bob@example.com,true,,last,"
 
       expect(report).to_not be_success
       expect(report.status).to eq(:invalid_header)
-      expect(report.missing_columns).to eq([:email])
+      expect(report.missing_columns).to eq(["email"])
       expect(report.message).to eq("The following columns are required: email")
     end
   end
@@ -248,6 +248,9 @@ bob@example.com,true,,last,"
       import = ImportUserCSV.new(content: csv_content)
 
       expect(import.header.extra_columns).to eq(["age"])
+
+      report = import.run!
+      expect(report.extra_columns).to eq(["age"])
     end
   end
 
