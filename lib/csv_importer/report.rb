@@ -12,8 +12,8 @@ module CSVImporter
 
     attribute :status, Symbol, default: proc { :pending }
 
-    attribute :missing_columns, Array[Symbol], default: proc { [] }
-    attribute :extra_columns, Array[Symbol], default: proc { [] }
+    attribute :missing_columns, Array[String], default: proc { [] }
+    attribute :extra_columns, Array[String], default: proc { [] }
 
     attribute :parser_error, String
 
