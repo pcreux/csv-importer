@@ -495,7 +495,7 @@ bob@example.com,false,,in,,,"""|
     import = ImportUserCSV.new(content: csv_content).run!
 
     expect(import).to_not be_success
-    expect(import.message).to eq "Unclosed quoted field on line 3."
+    expect(import.message).to include "Unclosed quoted field"
   end
 
   it "matches columns via regexp" do
