@@ -52,18 +52,19 @@ module CSVImporter
     # Set the attribute using the column_definition and the csv_value
     def set_attribute(model, column, csv_value)
       column_definition = column.definition
-      if column_definition.to && column_definition.to.is_a?(Proc)
-        to_proc = column_definition.to
+      transformer = column_definition.to
+      if transformer.respond_to?(:call)
+        arity = transformer.is_a?(Proc) ? transformer.arity : transformer.method(:call).arity
 
-        case to_proc.arity
+        case arity
         when 1 # to: ->(email) { email.downcase }
-          model.public_send("#{column_definition.name}=", to_proc.call(csv_value))
+          model.public_send("#{column_definition.name}=", transformer.call(csv_value))
         when 2 # to: ->(published, post) { post.published_at = Time.now if published == "true" }
-          to_proc.call(csv_value, model)
+          transformer.call(csv_value, model)
         when 3 # to: ->(field_value, post, column) { post.hash_field[column.name] = field_value }
-          to_proc.call(csv_value, model, column)
+          transformer.call(csv_value, model, column)
         else
-          raise ArgumentError, "`to` proc can only have 1, 2 or 3 arguments"
+          raise ArgumentError, "arity: #{transformer.arity.inspect} - `to` can only have 1, 2 or 3 arguments"
         end
       else
         attribute = column_definition.attribute

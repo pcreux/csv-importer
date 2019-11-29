@@ -53,7 +53,18 @@ module CSVImporter
     SEPARATORS = [",", ";", "\t"]
 
     def detect_separator(csv_content)
-      SEPARATORS.sort_by { |separator| csv_content.count(separator) }.last
+      SEPARATORS.min_by do |separator|
+        csv_content.count(separator)
+
+        all_lines = csv_content.lines
+        base_number = all_lines.first.count(separator)
+
+        if base_number.zero?
+          Float::MAX
+        else
+          all_lines.map{|line| line.count(separator) - base_number }.map(&:abs).inject(0) { |sum, i| sum + i }
+        end
+      end
     end
 
     # Remove trailing white spaces and ensure we always return a string

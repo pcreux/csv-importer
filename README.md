@@ -187,6 +187,27 @@ Like very advanced stuff? We grant you access to the [`column`](https://github.c
   end
 ```
 
+Note that `to:` accepts anything that responds to call and take 1, 2 or
+3 arguments.
+
+```ruby
+class ImportUserCSV
+  include CSVImporter
+
+  model User
+
+  column :birth_date, to: DateTransformer
+  column :renewal_date, to: DateTransformer
+  column :next_renewal_at, to: ->(value) { Time.at(value.to_i) }
+end
+
+class DateTransformer
+  def self.call(date)
+    Date.strptime(date, '%m/%d/%y')
+  end
+end
+```
+
 Now, what if the user does not provide the email column? It's not worth
 running the import, we should just reject the CSV file right away.
 That's easy:
@@ -205,7 +226,6 @@ import.valid_header? # => false
 import.report.status # => :invalid_header
 import.report.message # => "The following columns are required: 'email'"
 ```
-
 
 ### Update or Create
 

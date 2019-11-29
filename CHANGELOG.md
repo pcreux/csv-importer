@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## Master
+
+* Improve algorithm to detect separators. #88 by @brain-geek
+
 ## [0.6.0] - 2018-05-22
 
 ### Added
