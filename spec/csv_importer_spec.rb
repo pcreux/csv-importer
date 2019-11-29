@@ -61,14 +61,18 @@ describe CSVImporter do
   class ImportUserCSV
     include CSVImporter
 
+    class ConfirmedProcessor
+      def self.call(confirmed, model)
+        model.confirmed_at = confirmed == "true" ? Time.new(2012) : nil
+      end
+    end
+
     model User
 
     column :email, required: true, as: /email/i, to: ->(email) { email.downcase }
     column :f_name, as: :first_name, required: true
     column :last_name,  to: :l_name
-    column :confirmed,  to: ->(confirmed, model) do
-      model.confirmed_at = confirmed == "true" ? Time.new(2012) : nil
-    end
+    column :confirmed,  to: ConfirmedProcessor
     column :extra, as: /extra/i, to: ->(value, model, column) do
       model.custom_fields[column.name] = value
     end
@@ -495,7 +499,7 @@ bob@example.com,false,,in,,,"""|
     import = ImportUserCSV.new(content: csv_content).run!
 
     expect(import).to_not be_success
-    expect(import.message).to eq "Unclosed quoted field on line 3."
+    expect(import.message).to include "Unclosed quoted field"
   end
 
   it "matches columns via regexp" do
