@@ -496,6 +496,8 @@ new-mark@example.com,false,new mark,lee"
 bob@example.com,"false"
 bob@example.com,false,,in,,,"""|
 
+    expect(ImportUserCSV.new(content: csv_content)).to_not be_valid_header
+
     import = ImportUserCSV.new(content: csv_content).run!
 
     expect(import).to_not be_success
