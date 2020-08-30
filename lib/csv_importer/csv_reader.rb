@@ -8,7 +8,7 @@ module CSVImporter
     attribute :file # IO
     attribute :path, String
     attribute :quote_char, String, default: '"'
-    attribute :encoding, String, default: 'UTF-8:UTF-8'
+    attribute :encoding, String, default: 'UTF-8'
 
     def csv_rows
       @csv_rows ||= begin
