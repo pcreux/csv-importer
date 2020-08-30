@@ -46,7 +46,7 @@ module CSVImporter
     def sanitize_content(csv_content)
       internal_encoding = encoding.split(':').last
       csv_content
-        .encode(Encoding.find(internal_encoding), {invalid: :replace, undef: :replace, replace: ''}) # Remove invalid byte sequences
+        .encode(Encoding.find(internal_encoding), invalid: :replace, undef: :replace, replace: '') # Remove invalid byte sequences
         .gsub(/\r\r?\n?/, "\n") # Replaces windows line separators with "\n"
     end
 
