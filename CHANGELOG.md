@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] - 2020-09-02
+
+### Fixed
+
+* Ruby 2.7 compatibility. [#93][] by [@perezperret][]
+
 ## [0.7.0] - 2019-11-29
 
 ### Added
@@ -195,6 +201,7 @@ report object instead of raising an exception.
 [#83]: https://github.com/pcreux/csv-importer/issues/83
 [#85]: https://github.com/pcreux/csv-importer/issues/85
 [#88]: https://github.com/pcreux/csv-importer/issues/88
+[#93]: https://github.com/pcreux/csv-importer/issues/93
 [@brain-geek]: https://github.com/brain-geek
 [@danielweinmann]: https://github.com/danielweinmann
 [@egg-chicken]: https://github.com/egg-chicken
@@ -203,6 +210,7 @@ report object instead of raising an exception.
 [@mltsy]: https://github.com/mltsy
 [@paulodeleo]: https://github.com/paulodeleo
 [@pcreux]: https://github.com/pcreux
+[@perezperret]: https://github.com/perezperret
 [@pnomolos]: https://github.com/pnomolos
 [@shvetsovdm]: https://github.com/shvetsovdm
 [@stas]: https://github.com/stas
