@@ -14,8 +14,12 @@ module CSVImporter
       @csv_rows ||= begin
         sane_content = sanitize_content(read_content)
         separator = detect_separator(sane_content)
-        cells = CSV.parse(sane_content, col_sep: separator, quote_char: quote_char, skip_blanks: true, encoding: encoding)
-        sanitize_cells(cells)
+        cells = CSV.parse(
+          sane_content,
+          col_sep: separator, quote_char: quote_char, skip_blanks: true,
+          external_encoding: source_encoding
+        )
+        sanitize_cells(encode_cells(cells))
       end
     end
 
@@ -44,9 +48,8 @@ module CSVImporter
     end
 
     def sanitize_content(csv_content)
-      internal_encoding = encoding.split(':').last
       csv_content
-        .encode(Encoding.find(internal_encoding), {invalid: :replace, undef: :replace, replace: ''}) # Remove invalid byte sequences
+        .encode(Encoding.find(source_encoding), invalid: :replace, undef: :replace, replace: '') # Remove invalid byte sequences
         .gsub(/\r\r?\n?/, "\n") # Replaces windows line separators with "\n"
     end
 
@@ -74,6 +77,22 @@ module CSVImporter
           cell ? cell.strip : ""
         end
       end
+    end
+
+    def encode_cells(rows)
+      rows.map do |cells|
+        cells.map do |cell|
+          cell ? cell.encode(target_encoding) : ""
+        end
+      end
+    end
+
+    def source_encoding
+      encoding.split(':').first || 'UTF-8'
+    end
+
+    def target_encoding
+      encoding.split(':').last || 'UTF-8'
     end
   end
 end
