@@ -91,9 +91,11 @@ Or install it yourself as:
 
 ### Create an Importer
 
-Create a class and include `CSVImporter`.
+Require `csv-importer` in your current file ,create a class and include `CSVImporter`.
 
 ```ruby
+require 'csv-importer'
+
 class ImportUserCSV
   include CSVImporter
 end
