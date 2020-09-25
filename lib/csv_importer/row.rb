@@ -14,6 +14,8 @@ module CSVImporter
     attribute :after_build_blocks, Array[Proc], default: []
     attribute :skip, Virtus::Attribute::Boolean, default: false
 
+    delegate :persisted?, :save, to: :model
+
     # The model to be persisted
     def model
       @model ||= begin

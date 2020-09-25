@@ -645,6 +645,25 @@ mark@example.com,false,mark,new_last_name"
       expect(import.report.message).to eq "Import completed: 1 created, 1 update skipped"
     end
 
+    it "could skip by using custom Row class replacement overriding skip" do
+      import_cls = Class.new(CSVImporter::Row) do
+        def skip?
+          model.confirmed_at.blank?
+        end
+      end
+      csv_content = "email,confirmed,first_name,last_name
+bob@example.com,true,bob,,
+mark@example.com,false,mark,new_last_name
+jim@example.com,false,jim,,"
+      import = ImportUserCSV.new(content: csv_content) do
+        row_class(import_cls)
+      end
+
+      import.run!
+      expect(import.report.message).to eq "Import completed: 1 created, 1 create skipped, 1 update skipped"
+      expect(import.rows.first).to be_an_instance_of(import_cls)
+    end
+
     it "doesn't call skip! twice" do
       csv_content = "email,confirmed,first_name,last_name
 bob@example.com,true,bob,,

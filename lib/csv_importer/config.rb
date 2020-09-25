@@ -9,6 +9,7 @@ module CSVImporter
     attribute :when_invalid, Symbol, default: proc { :skip }
     attribute :after_build_blocks, Array[Proc], default: []
     attribute :after_save_blocks, Array[Proc], default: []
+    attribute :row_class, Class, default: Row
 
     def initialize_copy(orig)
       super

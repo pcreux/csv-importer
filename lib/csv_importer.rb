@@ -43,7 +43,6 @@ module CSVImporter
     include Dsl
   end
 
-
   # Defines the path, file or content of the csv file.
   # Also allows you to overwrite the configuration at runtime.
   #
@@ -70,8 +69,8 @@ module CSVImporter
   # Initialize and return the `Row`s for the current CSV file
   def rows
     csv.rows.map.with_index(2) do |row_array, line_number|
-      Row.new(header: header, line_number: line_number, row_array: row_array, model_klass: config.model,
-              identifiers: config.identifiers, after_build_blocks: config.after_build_blocks)
+      config.row_class.new(header: header, line_number: line_number, row_array: row_array, model_klass: config.model,
+              identifiers: config.identifiers, after_build_blocks: config.after_build_blocks) rescue jard
     end
   end
 

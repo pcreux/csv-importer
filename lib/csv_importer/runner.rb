@@ -46,7 +46,7 @@ module CSVImporter
         rows.each do |row|
           tags = []
 
-          if row.model.persisted?
+          if row.persisted?
             tags << :update
           else
             tags << :create
@@ -55,7 +55,7 @@ module CSVImporter
           if row.skip?
             tags << :skip
           else
-            if row.model.save
+            if row.save
               tags << :success
             else
               tags << :failure

@@ -14,6 +14,10 @@ module CSVImporter
       config.identifiers = params.first.is_a?(Proc) ? params.first : params
     end
 
+    def row_class(row_class)
+      config.row_class = row_class
+    end
+
     alias_method :identifiers, :identifier
 
     def when_invalid(action)
