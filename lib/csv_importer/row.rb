@@ -77,18 +77,14 @@ module CSVImporter
     # Error from the model mapped back to the CSV header if we can
     def errors
       Hash[
-        errors_hash.map do |attribute, errors|
+        model.errors.to_hash.map do |attribute, errors|
           if column_name = header.column_name_for_model_attribute(attribute)
-            [column_name, errors]
+            [column_name, errors.last]
           else
-            [attribute, errors]
+            [attribute, errors.last]
           end
         end
       ]
-    end
-
-    def errors_hash
-      model.errors.map{ |n| [n.attribute, n.message] }.to_h
     end
 
     def find_or_build_model
