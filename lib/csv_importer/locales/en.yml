@@ -1,0 +1,26 @@
+en:
+  csv_importer:
+    created_rows:
+      one: "%{count} created"
+      other: "%{count} created"
+    create_skipped_rows:
+      one: "%{count} create skipped"
+      other: "%{count} create skipped"
+    email: "email"
+    failed_to_create_rows:
+      one: "%{count} failed to create"
+      other: "%{count} failed to create"
+    failed_to_update_rows:
+      one: "%{count} failed to update"
+      other: "%{count} failed to update"
+    report_aborted: "Import aborted"
+    report_done: "Import completed: "
+    report_in_progress: "Import in progress"
+    report_invalid_header: "The following columns are required:"
+    report_pending: "Import hasn't started yet"
+    updated_rows:
+      one: "%{count} updated"
+      other: "%{count} updated"
+    update_skipped_rows:
+      one: "%{count} update skipped"
+      other: "%{count} updates skipped"

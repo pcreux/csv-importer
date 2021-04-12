@@ -444,6 +444,17 @@ You can handle exotic encodings with the `encoding` option.
 ImportUserCSV.new(content: "メール,氏名".encode('SJIS'), encoding: 'SJIS:UTF-8')
 ```
 
+### Internationalization
+
+To translate a csv column header (e.g. for report messages), simply add this in a .yml file.
+
+```yaml
+en:
+  csv_importer:
+    my_column: "My column"
+```
+
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment.
