@@ -12,6 +12,7 @@ require "csv_importer/report_message"
 require "csv_importer/runner"
 require "csv_importer/config"
 require "csv_importer/dsl"
+require "csv_importer/railtie" if defined?(Rails::Railtie)
 
 # A class that includes CSVImporter inherit its DSL and methods.
 #

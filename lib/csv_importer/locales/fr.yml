@@ -1,0 +1,26 @@
+fr:
+  csv_importer:
+    created_rows:
+      one: "%{count} créée"
+      other: "%{count} créées"
+    create_skipped_rows:
+      one: "%{count} ignorée pour la création"
+      other: "%{count} ignorées pour la création"
+    email: "email"
+    failed_to_create_rows:
+      one: "%{count} échec de création"
+      other: "%{count} échecs de création"
+    failed_to_update_rows:
+      one: "%{count} échec de modification"
+      other: "%{count} échecs de modification"
+    report_aborted: "Import avorté"
+    report_done: "Import terminé : "
+    report_in_progress: "Import en cours"
+    report_invalid_header: "Les colonnes suivantes sont obligatoires :"
+    report_pending: "L'import n'a pas encore commencé"
+    updated_rows:
+      one: "%{count} mise à jour"
+      other: "%{count} mises à jour"
+    update_skipped_rows:
+      one: "%{count} ignorée pour la modification"
+      other: "%{count} ignorées pour la modification"
