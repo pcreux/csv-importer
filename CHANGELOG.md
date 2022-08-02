@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.2] - 2022-08-02
+
+### Fixed
+
+* Handle Invisible Chars in headers. [#107][] by [@tracyloisel][]
+
 ## [0.8.1] - 2021-02-21
 
 * Rails 6.2 compability. [#99][] by [@stevenou][]
@@ -207,6 +213,7 @@ report object instead of raising an exception.
 [#88]: https://github.com/pcreux/csv-importer/issues/88
 [#93]: https://github.com/pcreux/csv-importer/issues/93
 [#99]: https://github.com/pcreux/csv-importer/issues/99
+[#107]: https://github.com/pcreux/csv-importer/issues/107
 [@brain-geek]: https://github.com/brain-geek
 [@danielweinmann]: https://github.com/danielweinmann
 [@egg-chicken]: https://github.com/egg-chicken
@@ -220,3 +227,4 @@ report object instead of raising an exception.
 [@shvetsovdm]: https://github.com/shvetsovdm
 [@stas]: https://github.com/stas
 [@stevenou]: https://github.com/stevenou
+[@tracyloisel]: https://github.com/tracyloisel
