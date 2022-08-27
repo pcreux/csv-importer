@@ -30,6 +30,11 @@ require "csv_importer/dsl"
 module CSVImporter
   class Error < StandardError; end
 
+  def self.sanitize_cell(raw_value)
+    raw_value.to_s
+      .strip # Remove trailing white space
+  end
+  
    # Setup DSL and config object
   def self.included(klass)
     klass.extend(Dsl)

@@ -74,7 +74,7 @@ module CSVImporter
     def sanitize_cells(rows)
       rows.map do |cells|
         cells.map do |cell|
-          cell ? cell.strip : ""
+          cell ? CSVImporter.sanitize_cell(cell) : ""
         end
       end
     end

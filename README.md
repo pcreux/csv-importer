@@ -443,6 +443,22 @@ You can handle exotic encodings with the `encoding` option.
 ```ruby
 ImportUserCSV.new(content: "メール,氏名".encode('SJIS'), encoding: 'SJIS:UTF-8')
 ```
+### Custom cell sanitising
+
+By default cell values are stripped, that means "  Bob  Elvis " become "Bob  Elvis", however you may want to go further and get rid of the inner extra spaces that often present on cell value and get the proper "Bob Elvis"
+
+To do that, add an initialiser `config/initializers/csv_importer.rb` and define you proper rules.
+
+```
+require 'csv_importer'
+module CSVImporter
+  def self.sanitize_cell(raw_value)
+    raw_value.to_s
+      .gsub(/[\b\s\u00A0]+/, ' ') # Normalize white space
+      .strip # Remove trailing white space
+  end
+end
+```
 
 ## Development
 
