@@ -27,5 +27,9 @@ module CSVImporter
     def after_save(&block)
       config.after_save(block)
     end
+
+    def sql_transaction(behavior)
+      config.sql_transaction = behavior
+    end
   end
 end
