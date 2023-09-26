@@ -12,6 +12,7 @@ module CSVImporter
     attribute :rows, Array[Row]
     attribute :when_invalid, Symbol
     attribute :after_save_blocks, Array[Proc], default: []
+    attribute :sql_transaction, Symbol
 
     attribute :report, Report, default: proc { Report.new }
 
@@ -41,38 +42,48 @@ module CSVImporter
       when_invalid == :abort
     end
 
+    def sql_transaction_all_rows?
+      sql_transaction == :all_rows
+    end
+
+    def sql_transaction_one_row?
+      sql_transaction == :each_row
+    end
+
     def persist_rows!
-      transaction do
+      full_transaction do
         rows.each do |row|
-          tags = []
+          transaction do
+            tags = []
 
-          if row.model.persisted?
-            tags << :update
-          else
-            tags << :create
-          end
-
-          if row.skip?
-            tags << :skip
-          elsif row.errors.size > 0
-            tags << :failure
-          else
-            if row.model.save
-              tags << :success
+            if row.model.persisted?
+              tags << :update
             else
-              tags << :failure
+              tags << :create
             end
-          end
 
-          add_to_report(row, tags)
-
-          after_save_blocks.each do |block|
-            case block.arity
-            when 0 then block.call
-            when 1 then block.call(row.model)
-            when 2 then block.call(row.model, row.csv_attributes)
+            if row.skip?
+              tags << :skip
+            elsif row.errors.size > 0
+              tags << :failure
             else
-              raise ArgumentError, "after_save block of arity #{ block.arity } is not supported"
+              if row.model.save
+                tags << :success
+              else
+                tags << :failure
+              end
+            end
+
+            add_to_report(row, tags)
+
+            after_save_blocks.each do |block|
+              case block.arity
+              when 0 then block.call
+              when 1 then block.call(row.model)
+              when 2 then block.call(row.model, row.csv_attributes)
+              else
+                raise ArgumentError, "after_save block of arity #{ block.arity } is not supported"
+              end
             end
           end
         end
@@ -102,8 +113,20 @@ module CSVImporter
       raise ImportAborted if abort_when_invalid? && tags[1] == :failure
     end
 
+    def full_transaction(&block)
+      if sql_transaction_all_rows?
+        rows.first.model.class.transaction(&block)
+      else
+        block.call
+      end
+    end
+
     def transaction(&block)
-      rows.first.model.class.transaction(&block)
+      if sql_transaction_one_row?
+        rows.first.model.class.transaction(&block)
+      else
+        block.call
+      end
     end
   end
 end
