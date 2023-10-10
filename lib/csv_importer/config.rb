@@ -9,7 +9,6 @@ module CSVImporter
     attribute :when_invalid, Symbol, default: proc { :skip }
     attribute :after_build_blocks, Array[Proc], default: []
     attribute :after_save_blocks, Array[Proc], default: []
-    attribute :sql_transaction, Symbol, default: proc { :all_rows }
 
     def initialize_copy(orig)
       super
@@ -17,7 +16,6 @@ module CSVImporter
       self.identifiers = orig.identifiers.dup
       self.after_save_blocks = orig.after_save_blocks.dup
       self.after_build_blocks = orig.after_build_blocks.dup
-      self.sql_transaction = orig.sql_transaction.dup
     end
 
     def after_build(block)
