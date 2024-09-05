@@ -12,6 +12,8 @@ module CSVImporter
     attribute :rows, Array[Row]
     attribute :when_invalid, Symbol
     attribute :after_save_blocks, Array[Proc], default: []
+    attribute :batch_load, Boolean, default: false
+    attribute :batch_size, Integer, default: 1000
 
     attribute :report, Report, default: proc { Report.new }
 
@@ -42,37 +44,55 @@ module CSVImporter
     end
 
     def persist_rows!
+      if batch_load
+        process_in_batches
+      else
+        process_all_at_once
+      end
+    end
+
+    def process_in_batches
       transaction do
-        rows.each do |row|
-          tags = []
+        rows.each_slice(batch_size) do |batch|
+          batch.each { |row| process_row(row) }
+        end
+      end
+    end
 
-          if row.model.persisted?
-            tags << :update
-          else
-            tags << :create
-          end
+    def process_all_at_once
+      transaction do
+        rows.each { |row| process_row(row) }
+      end
+    end
 
-          if row.skip?
-            tags << :skip
-          else
-            if row.model.save
-              tags << :success
-            else
-              tags << :failure
-            end
-          end
+    def process_row(row)
+      tags = []
 
-          add_to_report(row, tags)
+      if row.model.persisted?
+        tags << :update
+      else
+        tags << :create
+      end
 
-          after_save_blocks.each do |block|
-            case block.arity
-            when 0 then block.call
-            when 1 then block.call(row.model)
-            when 2 then block.call(row.model, row.csv_attributes)
-            else
-              raise ArgumentError, "after_save block of arity #{ block.arity } is not supported"
-            end
-          end
+      if row.skip?
+        tags << :skip
+      else
+        if row.model.save
+          tags << :success
+        else
+          tags << :failure
+        end
+      end
+
+      add_to_report(row, tags)
+
+      after_save_blocks.each do |block|
+        case block.arity
+        when 0 then block.call
+        when 1 then block.call(row.model)
+        when 2 then block.call(row.model, row.csv_attributes)
+        else
+          raise ArgumentError, "after_save block of arity #{ block.arity } is not supported"
         end
       end
     end

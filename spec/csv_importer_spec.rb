@@ -149,16 +149,16 @@ BOB@example.com,true,bob,,meta1,meta2"
       )
     end
 
-      it "records the correct line number for each row" do
-        csv_content = "email,confirmed,first_name,last_name
+    it "records the correct line number for each row" do
+      csv_content = "email,confirmed,first_name,last_name
 BOB@example.com,true,bob,,"
-        import = ImportUserCSV.new(content: csv_content)
-        import.run!
+      import = ImportUserCSV.new(content: csv_content)
+      import.run!
 
-        expect(import.report.valid_rows.size).to eq(1)
-        expect(import.report.created_rows.size).to eq(1)
-        expect(import.report.created_rows.first.line_number).to eq(2)
-      end
+      expect(import.report.valid_rows.size).to eq(1)
+      expect(import.report.created_rows.size).to eq(1)
+      expect(import.report.created_rows.first.line_number).to eq(2)
+    end
   end
 
   describe "invalid records" do
@@ -672,4 +672,12 @@ mark@example.com,false,mark,new_last_name"
       expect(import.report.message).to eq "Import completed: 1 updated, 1 create skipped"
     end
   end # describe "skipping"
+
+  it "loads a batch reader when batch_load is true" do
+    csv_content = "email,confirmed,first_name,last_name
+bob@example.com,true,bob,,
+mark@example.com,false,mark,new_last_name"
+    import = ImportUserCSV.new(content: csv_content, batch_load: true)
+    expect(import.csv).to be_a(CSVImporter::CSVBatchReader)
+  end
 end

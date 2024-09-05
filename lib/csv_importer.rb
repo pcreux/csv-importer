@@ -3,6 +3,7 @@ require "virtus"
 
 require "csv_importer/version"
 require "csv_importer/csv_reader"
+require "csv_importer/csv_batch_reader"
 require "csv_importer/column_definition"
 require "csv_importer/column"
 require "csv_importer/header"
@@ -52,10 +53,12 @@ module CSVImporter
   #   .new(file: my_csv_file)
   #   .new(path: "subscribers.csv", model: newsletter.subscribers)
   #
-  def initialize(*args, &block)
-    @csv = CSVReader.new(*args)
+  def initialize(**kwargs, &block)
     @config = self.class.config.dup
-    @config.attributes = args.last
+    config_kwargs = kwargs.slice(*@config.attributes.keys)
+    @config.attributes = config_kwargs # Virtus handles this like a merge
+    reader_kwargs = kwargs.except(*@config.attributes.keys)
+    @csv = @config.batch_load ? CSVBatchReader.new(**reader_kwargs) : CSVReader.new(**reader_kwargs)
     @report = Report.new
     Configurator.new(@config).instance_exec(&block) if block
   end
@@ -94,7 +97,8 @@ module CSVImporter
   def run!
     if valid_header?
       @report = Runner.call(rows: rows, when_invalid: config.when_invalid,
-                            after_save_blocks: config.after_save_blocks, report: @report)
+                            after_save_blocks: config.after_save_blocks, report: @report,
+                            batch_load: config.batch_load, batch_size: config.batch_size)
     else
       @report
     end

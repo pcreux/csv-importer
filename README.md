@@ -290,12 +290,12 @@ You are now done defining your importer, let's run it!
 
 ### Import from a file, path or string
 
-You can import from a file, path or just the CSV content. Please note
-that we currently load the entire file in memory. Feel free to
-contribute if you need to support CSV files with millions of lines! :)
+You can import from a file, path or just the CSV content. To avoid loading
+the entire file in memory, enable `batch_load` and optionally provide a
+`batch_size` (default is 1000).
 
 ```ruby
-import = ImportUserCSV.new(file: my_file)
+import = ImportUserCSV.new(file: my_file, batch_load: true, batch_size: 2_500)
 import = ImportUserCSV.new(path: "tmp/new_users.csv")
 import = ImportUserCSV.new(content: "email,name\nbob@example.com,bob")
 ```

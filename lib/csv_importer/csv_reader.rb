@@ -49,12 +49,13 @@ module CSVImporter
 
     def sanitize_content(csv_content)
       csv_content
-        .encode(Encoding.find(source_encoding), invalid: :replace, undef: :replace, replace: '') # Remove invalid byte sequences
-        .gsub(/\r\r?\n?/, "\n") # Replaces windows line separators with "\n"
+        &.encode(Encoding.find(source_encoding), invalid: :replace, undef: :replace, replace: '') # Remove invalid byte sequences
+        &.gsub(/\r\r?\n?/, "\n") # Replaces windows line separators with "\n"
     end
 
-    SEPARATORS = [",", ";", "\t"]
+    SEPARATORS = [",", ";", "\t"].freeze
 
+    # in a properly formed CSV, amount of separators on each line should be equal.
     def detect_separator(csv_content)
       SEPARATORS.min_by do |separator|
         csv_content.count(separator)
