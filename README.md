@@ -351,6 +351,15 @@ UserImport.new(file: my_file) do
 end
 ```
 
+
+### Set default values
+
+You can set default values for every model record with the `default_values` option:
+
+```ruby
+UserImport.new(file: csv_file, default_values: {batch: '2024a'})
+```
+
 ### Skip import
 
 You can skip the import of a model by calling `skip!` in an

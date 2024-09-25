@@ -470,6 +470,18 @@ bob@example.com   ,  true,   bob   , \"the dude\" jones,"
     }.to_not raise_error(NoMethodError, "undefined method `downcase' for nil:NilClass")
   end
 
+  it "sets default attributes" do
+    csv_content = "Email,Confirmed,First name,last_name
+  bob@example.com   ,  true,   bob   ,,"
+    default_values = {created_by_user_id: 123}
+    import = ImportUserCSV.new(content: csv_content, default_values: default_values)
+
+    import.run!
+
+    model = import.report.created_rows.first.model
+    expect(model).to have_attributes({created_by_user_id: 123})
+  end
+
   describe "#when_invalid" do
     it "could abort" do
       csv_content = "email,confirmed,first_name,last_name

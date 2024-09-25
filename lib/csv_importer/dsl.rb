@@ -24,6 +24,10 @@ module CSVImporter
       config.after_build(block)
     end
 
+    def after_set_attributes(&block)
+      config.after_set_attributes(block)
+    end
+
     def after_save(&block)
       config.after_save(block)
     end
