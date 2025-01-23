@@ -54,6 +54,8 @@ module CSVImporter
 
           if row.skip?
             tags << :skip
+          elsif row.errors.size > 0
+            tags << :failure
           else
             if row.model.save
               tags << :success

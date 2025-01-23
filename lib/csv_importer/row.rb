@@ -33,7 +33,7 @@ module CSVImporter
 
     # Set attributes
     def set_attributes(model)
-      header.columns.each do |column|
+      header.columns.sort_by(&:rank).each do |column|
         value = csv_attributes[column.name]
         begin
           value = value.dup if value

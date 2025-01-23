@@ -430,7 +430,7 @@ bob@example.com   ,  true,   bob   ,,"
 bob@example.com   ,  true,   bob   ,,"
 
     # insert invisible characters
-    csv_content.insert(-1, "\u{FEFF}")
+    csv_content.insert(0, "\u{FEFF}")
 
     csv_io = StringIO.new(csv_content)
     import = ImportUserCSV.new(file: csv_io)

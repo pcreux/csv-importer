@@ -70,11 +70,11 @@ module CSVImporter
       end
     end
 
-    # Remove trailing white spaces and ensure we always return a string
+    # Remove trailing white spaces, invisible characters and ensure we always return a string
     def sanitize_cells(rows)
       rows.map do |cells|
         cells.map do |cell|
-          cell ? cell.strip : ""
+          cell ? cell.strip.gsub(/\P{Print}|\p{Cf}/, '') : ""
         end
       end
     end

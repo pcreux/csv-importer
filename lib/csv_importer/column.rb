@@ -6,5 +6,6 @@ module CSVImporter
 
     attribute :name, String
     attribute :definition, ColumnDefinition
+    attribute :rank, Integer, default: 0
   end
 end
