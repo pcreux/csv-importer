@@ -7,7 +7,7 @@ module CSVImporter
     end
 
     def column(name, options={})
-      config.column_definitions << options.merge(name: name)
+      config.column_definitions << ColumnDefinition.new(**options, name: name)
     end
 
     def identifier(*params)

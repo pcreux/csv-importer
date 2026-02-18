@@ -24,12 +24,18 @@ module CSVImporter
   #   end
   #
   class ColumnDefinition
-    include Virtus.model
+    attr_reader :name, :to, :as, :required
 
-    attribute :name, Symbol
-    attribute :to # Symbol or Proc
-    attribute :as # Symbol, String, Regexp, Array
-    attribute :required, Virtus::Attribute::Boolean
+    def initialize(name:, to: nil, as: nil, required: false)
+      @name = name
+      @to = to
+      @as = as
+      @required = required
+    end
+
+    def required?
+      !!required
+    end
 
     # The model attribute that this column targets
     def attribute

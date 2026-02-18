@@ -2,13 +2,15 @@ module CSVImporter
 
   # Reads, sanitize and parse a CSV file
   class CSVReader
-    include Virtus.model
+    attr_reader :content, :file, :path, :quote_char, :encoding
 
-    attribute :content, String
-    attribute :file # IO
-    attribute :path, String
-    attribute :quote_char, String, default: '"'
-    attribute :encoding, String, default: 'UTF-8:UTF-8'
+    def initialize(content: nil, file: nil, path: nil, quote_char: '"', encoding: 'UTF-8:UTF-8')
+      @content = content
+      @file = file
+      @path = path
+      @quote_char = quote_char
+      @encoding = encoding
+    end
 
     def csv_rows
       @csv_rows ||= begin

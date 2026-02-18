@@ -4,15 +4,22 @@ module CSVImporter
   # Using the header, the model_klass and the identifier it builds the model
   # to be persisted.
   class Row
-    include Virtus.model
+    attr_reader :header, :line_number, :row_array, :model_klass, :identifiers, :after_build_blocks
+    attr_accessor :skip
 
-    attribute :header, Header
-    attribute :line_number, Integer
-    attribute :row_array, Array[String]
-    attribute :model_klass
-    attribute :identifiers # Array[Symbol] or Proc
-    attribute :after_build_blocks, Array[Proc], default: []
-    attribute :skip, Virtus::Attribute::Boolean, default: false
+    def initialize(header:, line_number: nil, row_array: nil, model_klass: nil, identifiers: nil, after_build_blocks: [], skip: false)
+      @header = header
+      @line_number = line_number
+      @row_array = row_array
+      @model_klass = model_klass
+      @identifiers = identifiers
+      @after_build_blocks = after_build_blocks
+      @skip = skip
+    end
+
+    def skip?
+      !!skip
+    end
 
     # The model to be persisted
     def model

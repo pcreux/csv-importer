@@ -5,20 +5,18 @@ require 'set'
 describe CSVImporter do
   # Mimics an active record model
   class User
-    include Virtus.model
     include ActiveModel::Model
 
-    attribute :id
-    attribute :email
-    attribute :f_name
-    attribute :l_name
-    attribute :confirmed_at
-    attribute :created_by_user_id
-    attribute :custom_fields, Hash
+    attr_accessor :id, :email, :f_name, :l_name, :confirmed_at, :created_by_user_id, :custom_fields
 
     validates_presence_of :email
     validates_format_of :email, with: /[^@]+@[^@]/ # contains one @ symbol
     validates_presence_of :f_name
+
+    def initialize(attributes = {})
+      @custom_fields = {}
+      super
+    end
 
     def self.transaction
       yield
@@ -37,6 +35,12 @@ describe CSVImporter do
       end
 
       true
+    end
+
+    def attributes
+      { id: id, email: email, f_name: f_name, l_name: l_name,
+        confirmed_at: confirmed_at, created_by_user_id: created_by_user_id,
+        custom_fields: custom_fields }
     end
 
     def self.find_by(attributes)

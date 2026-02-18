@@ -8,23 +8,25 @@ module CSVImporter
   # * It provides a human readable message
   #
   class Report
-    include Virtus.model
+    attr_accessor :status, :missing_columns, :extra_columns, :parser_error,
+                  :created_rows, :updated_rows, :failed_to_create_rows, :failed_to_update_rows,
+                  :create_skipped_rows, :update_skipped_rows, :message_generator
 
-    attribute :status, Symbol, default: proc { :pending }
-
-    attribute :missing_columns, Array[String], default: proc { [] }
-    attribute :extra_columns, Array[String], default: proc { [] }
-
-    attribute :parser_error, String
-
-    attribute :created_rows, Array[Row], default: proc { [] }
-    attribute :updated_rows, Array[Row], default: proc { [] }
-    attribute :failed_to_create_rows, Array[Row], default: proc { [] }
-    attribute :failed_to_update_rows, Array[Row], default: proc { [] }
-    attribute :create_skipped_rows, Array[Row], default: proc { [] }
-    attribute :update_skipped_rows, Array[Row], default: proc { [] }
-
-    attribute :message_generator, Class, default: proc { ReportMessage }
+    def initialize(status: :pending, missing_columns: [], extra_columns: [], parser_error: nil,
+                   created_rows: [], updated_rows: [], failed_to_create_rows: [], failed_to_update_rows: [],
+                   create_skipped_rows: [], update_skipped_rows: [], message_generator: ReportMessage)
+      @status = status
+      @missing_columns = missing_columns
+      @extra_columns = extra_columns
+      @parser_error = parser_error
+      @created_rows = created_rows
+      @updated_rows = updated_rows
+      @failed_to_create_rows = failed_to_create_rows
+      @failed_to_update_rows = failed_to_update_rows
+      @create_skipped_rows = create_skipped_rows
+      @update_skipped_rows = update_skipped_rows
+      @message_generator = message_generator
+    end
 
     def valid_rows
       created_rows + updated_rows
@@ -58,6 +60,17 @@ module CSVImporter
 
     def message
       message_generator.call(self)
+    end
+
+    def row_counts
+      {
+        created_rows: created_rows,
+        updated_rows: updated_rows,
+        failed_to_create_rows: failed_to_create_rows,
+        failed_to_update_rows: failed_to_update_rows,
+        create_skipped_rows: create_skipped_rows,
+        update_skipped_rows: update_skipped_rows,
+      }
     end
   end
 end

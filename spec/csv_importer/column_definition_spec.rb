@@ -8,7 +8,7 @@ module CSVImporter
         match { |column_definition| column_definition.match?(name) }
       end
 
-      subject { ColumnDefinition.new(described_class) }
+      subject { ColumnDefinition.new(**self.class.metadata[:description_args].first) }
 
       context(name: :email) do
         [ "email", "Email", "EMAIL" ].each do |name|

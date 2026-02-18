@@ -3,17 +3,18 @@ module CSVImporter
   #
   # It iterates over the rows' models and persist them. It returns a `Report`.
   class Runner
-    def self.call(*args)
-      new(*args).call
+    def self.call(**args)
+      new(**args).call
     end
 
-    include Virtus.model
+    attr_reader :rows, :when_invalid, :after_save_blocks, :report
 
-    attribute :rows, Array[Row]
-    attribute :when_invalid, Symbol
-    attribute :after_save_blocks, Array[Proc], default: []
-
-    attribute :report, Report, default: proc { Report.new }
+    def initialize(rows: [], when_invalid: nil, after_save_blocks: [], report: nil)
+      @rows = rows
+      @when_invalid = when_invalid
+      @after_save_blocks = after_save_blocks
+      @report = report || Report.new
+    end
 
     ImportAborted = Class.new(StandardError)
 
