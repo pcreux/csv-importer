@@ -43,10 +43,9 @@ module CSVImporter
 
     # Generate something like: "3 created. 4 updated. 1 failed to create. 2 failed to update."
     def import_details
-      report.attributes
-        .select { |name, _| name["_rows"] }
-        .select { |_, instances| instances.size > 0 }
-        .map { |bucket, instances| "#{instances.size} #{bucket.to_s.gsub('_rows', '').gsub('_', ' ')}" }
+      report.row_counts
+        .select { |_, rows| rows.size > 0 }
+        .map { |bucket, rows| "#{rows.size} #{bucket.to_s.gsub('_rows', '').gsub('_', ' ')}" }
         .join(", ")
     end
 

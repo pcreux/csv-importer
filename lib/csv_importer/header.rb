@@ -2,10 +2,12 @@ module CSVImporter
 
   # The CSV Header
   class Header
-    include Virtus.model
+    attr_reader :column_definitions, :column_names
 
-    attribute :column_definitions, Array[ColumnDefinition]
-    attribute :column_names, Array[String]
+    def initialize(column_definitions:, column_names:)
+      @column_definitions = column_definitions
+      @column_names = column_names
+    end
 
     def columns
       column_names.map do |column_name|
